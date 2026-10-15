@@ -1,0 +1,101 @@
+id;texto;via;titular;luz;lluvia_24h_mm;alerta_aemet;intensidad_trafico;zona_montana;organismo;severidad;riesgo_vial;urgente;inspeccion;correcta_s_n;correccion
+AV-00044;Fuego en la cuneta de la AS-114 en el km 6!;AS-114;Principado;dia;0;ninguna;alta;True;Emergencias;Crítica;True;True;False;s;
+AV-00354;hay un bachecillo en el borde en mieres, nada grave;calle Manuel Llaneza;Ayuntamiento;noche;0.0;ninguna;media;False;Ayuntamiento;Baja;False;False;False;s;
+AV-00895;un zorro atropellado pero vivo en el arcen!;AS-II;Principado;dia;16.9;ninguna;alta;False;Medio ambiente;Media;False;False;False;s;
+AV-00977;Se ha venido medio monte abajo y la AS-263 está cortada a la altura del km 5 con la que está cayendo.;AS-263;Principado;dia;63.5;naranja;media;False;Conservación de carreteras;Crítica;True;True;True;s;
+AV-00179;Un zorro atropellado pero vivo en el arcén pasado Gijón.;A-8;Estado;dia;14.4;ninguna;media;False;Medio ambiente;Media;False;False;False;s;
+AV-00575;Vertido de producto químico en la calzada en el km 78, huele muy fuerte...;A-8;Estado;noche;0.0;ninguna;media;False;Emergencias;Crítica;True;True;True;n;severidad Alta
+AV-00458;Un semaforo lleva apagado varias horas en la calle La Vega en Mieres, junto al cruce!;calle La Vega;Ayuntamiento;dia;0.0;ninguna;media;False;Ayuntamiento;Media;False;False;False;s;
+AV-00859;La señal de la curva está muy sucia y casi no se lee de Avilés, a la altura del número 43, y pasan muchos coches;calle La Cámara;Ayuntamiento;dia;9.9;ninguna;alta;False;Ayuntamiento;Baja;False;False;False;s;
+AV-00898;hay un corzo herido en la cuneta de la as-ii;AS-II;Principado;dia;0.0;ninguna;alta;False;Medio ambiente;Media;False;False;False;s;
+AV-00115;Hay un corzo herido en la cuneta de la AS-227 a la altura del km 2...;AS-227;Principado;dia;0.0;ninguna;baja;True;Medio ambiente;Media;False;False;False;s;
+AV-00565;Está nevando fuerte y la LN-8 empieza a cubrirse pasado La Cubilla.;LN-8;Principado;dia;3.6;ninguna;baja;True;Conservación de carreteras;Alta;True;True;False;s;
+AV-00763;La quitanieves no ha pasado y hay nieve acumulada cerca de Grandas de Salime...;AS-12;Principado;noche;0.0;ninguna;media;True;Conservación de carreteras;Crítica;True;True;False;s;
+AV-00625;Un corzo muerto en la carretera en el km 15, ocupa el carril;AS-114;Principado;dia;8.8;ninguna;media;True;Conservación de carreteras;Alta;True;True;False;s;
+AV-00773;el río junto a la as-12 baja con espuma y color raro en el km 7;AS-12;Principado;crepusculo;12.5;desconocido;media;False;Medio ambiente;Media;False;False;True;s;
+AV-00023;ay un agujero grande en la calzada a la altura del km 9, casi reviento una rueda;N-630;Estado;dia;25.6;ninguna;media;True;Conservación de carreteras;Alta;True;False;True;s;
+AV-00642;Bache muy profundo en mitad del carril, y es de noche, no se ve nada;calle Rivero;Ayuntamiento;crepusculo;17.4;ninguna;alta;False;Ayuntamiento;Alta;True;False;True;s;
+AV-00539;No funciona el semáforo en Oviedo, los coches pasan como pueden, y pasan muchos coches!;avenida de Galicia;Ayuntamiento;dia;8.3;ninguna;alta;False;Ayuntamiento;Alta;True;True;False;s;
+AV-00733;Objetos caídos de una furgoneta en la calzada;avenida Pablo Iglesias;Ayuntamiento;crepusculo;0.0;ninguna;alta;False;Tráfico;Crítica;True;True;False;n;severidad Media
+AV-00462;barrera de seguridad doblada tras un golpe a la altura del km 26, y es de noche, no se ve nada.;AS-227;Principado;noche;8.6;ninguna;baja;False;Conservación de carreteras;Alta;True;False;True;s;
+AV-00798;quitamiedos roto en la n-630.;N-630;Estado;dia;0.0;ninguna;baja;False;Conservación de carreteras;Media;False;False;True;n;severidad Alta
+AV-00690;Un camión cisterna pierde líquido en la AS-227 cerca de Pola de Somiedo...;AS-227;Principado;crepusculo;0.0;ninguna;alta;True;Emergencias;Crítica;True;True;True;n;severidad Alta
+AV-00969;El rio junto a la N-632 baja con espuma y color raro;N-632;Estado;noche;0.0;ninguna;media;False;Medio ambiente;Media;False;False;True;s;
+AV-00542;coche averiado parado en el carril de la a-8.;A-8;Estado;noche;29.0;desconocido;alta;False;Tráfico;Crítica;True;True;False;n;severidad Alta
+AV-00488;Hay un bachecillo en el borde a la altura del km 1, nada grave;LN-8;Principado;dia;0.0;ninguna;baja;True;Conservación de carreteras;Baja;False;False;False;s;
+AV-00216;Carretera cortada por un desprendimiento cerca de Oviedo, tierra y árboles en los dos carriles con la que está cayendo;AS-II;Principado;dia;34.8;ninguna;media;False;Conservación de carreteras;Crítica;True;True;True;s;
+AV-00067;Gasoil derramado en la curva de Langreo, a la altura del numero 77, las motos resbalan;avenida de la Constitución;Ayuntamiento;dia;7.9;ninguna;media;False;Ayuntamiento;Alta;True;True;False;s;
+AV-00132;Hay una roca ocupando parcialmente un carril en la A-66 pasado Campomanes;A-66;Estado;noche;0.0;ninguna;media;False;Conservación de carreteras;Crítica;True;True;True;s;
+AV-00153;Bache pequeño en el arcén de la A-66 cerca de Mieres;A-66;Estado;dia;0.0;ninguna;media;False;Conservación de carreteras;Baja;False;False;False;s;
+AV-00466;bache muy profundo en mitad del carril en el km 12, y pasan muchos coches porfa.;AS-17;Principado;dia;15.9;ninguna;alta;False;Conservación de carreteras;Alta;True;False;True;s;
+AV-00192;Hay una señal tapada por la vegetación pasado Sotrondio.;AS-117;Principado;dia;11.8;ninguna;media;True;Conservación de carreteras;Baja;False;False;False;s;
+AV-01008;El asfalto esta algo levantado en el borde de la calzada en Gijon;avenida de Schulz;Ayuntamiento;dia;9.6;ninguna;alta;False;Ayuntamiento;Media;False;False;False;s;
+AV-00199;Animal atropellado en la calzada a la altura del km 60 porfa...;A-8;Estado;dia;0.0;ninguna;media;False;Conservación de carreteras;Alta;True;True;False;n;severidad Media
+AV-00640;Hay un jabalí muerto en mitad del carril de la AS-263 pasado Llanes, y es de noche, no se ve nada;AS-263;Principado;crepusculo;0.0;ninguna;alta;False;Conservación de carreteras;Crítica;True;True;False;n;severidad Alta
+AV-00619;hay un bachecillo en el borde, nada grave!;avenida de la Constitución;Ayuntamiento;dia;0.0;ninguna;alta;False;Ayuntamiento;Media;False;False;False;n;severidad Baja
+AV-00158;nieve en la calzada en el km 22, sin cadenas no se sube!;AS-15;Principado;dia;10.9;amarilla;baja;True;Conservación de carreteras;Alta;True;True;False;s;
+AV-00480;Se ha abierto un socavón en la avenida de la Constitución;avenida de la Constitución;Ayuntamiento;dia;7.7;ninguna;media;False;Ayuntamiento;Alta;True;True;True;s;
+AV-00761;La calle está a oscuras, no funciona el alumbrado de Langreo, a la altura del número 47;avenida de la Constitución;Ayuntamiento;crepusculo;11.6;ninguna;alta;False;Ayuntamiento;Media;False;False;False;s;
+AV-00634;Retencion larga en la AS-117 pasado Sotrondio con la que esta cayendo;AS-117;Principado;crepusculo;28.0;ninguna;media;True;Tráfico;Media;False;False;False;s;
+AV-00336;Semáforo apagado en el cruce de la calle Dorado en Langreo, y pasan muchos coches!;calle Dorado;Ayuntamiento;dia;1.6;ninguna;alta;False;Ayuntamiento;Alta;True;True;False;s;
+AV-00730;Quitamiedos roto en la AS-12 en el km 10;AS-12;Principado;crepusculo;12.3;ninguna;baja;True;Conservación de carreteras;Alta;True;False;True;s;
+AV-00224;Hay un camión averiado ocupando un carril en Gijón, y pasan muchos coches.;avenida de la Costa;Ayuntamiento;dia;4.3;ninguna;alta;False;Tráfico;Crítica;True;True;False;s;
+AV-00467;Fuego en la cuneta de la A-8 pasado Llanes;A-8;Estado;dia;0.0;ninguna;media;True;Emergencias;Crítica;True;True;False;s;
+AV-00074;no funciona el semaforo, los coches pasan como pueden, y pasan muchos coches;avenida de la Costa;Ayuntamiento;dia;3.4;ninguna;alta;False;Ayuntamiento;Alta;True;True;False;s;
+AV-00056;Hay un árbol tirado en medio de la calle en Oviedo, junto al cruce tras el temporal, y es de noche, no se ve nada...;calle General Elorza;Ayuntamiento;crepusculo;0.0;amarilla;media;False;Ayuntamiento;Crítica;True;True;True;s;
+AV-00736;Hay una alcantarilla abierta en mitad de la calle en Mieres, junto al cruce, y es de noche, no se ve nada porfa!;calle Manuel Llaneza;Ayuntamiento;crepusculo;1.5;ninguna;alta;False;Ayuntamiento;Crítica;True;True;True;n;severidad Alta
+AV-00071;Falta la tapa de una alcantarilla en la calzada de la avenida de Galicia de Oviedo, a la altura del numero 34...;avenida de Galicia;Ayuntamiento;dia;16.4;ninguna;media;False;Ayuntamiento;Alta;True;True;True;s;
+AV-00229;farola fundida en la avenida pablo iglesias de gijón, a la altura del número 67, y pasan muchos coches;avenida Pablo Iglesias;Ayuntamiento;dia;38.6;amarilla;alta;False;Ayuntamiento;Baja;False;False;False;s;
+AV-00966;el rio junto a la n-632 baja con espuma y color raro;N-632;Estado;crepusculo;19.7;ninguna;media;False;Medio ambiente;Media;False;False;True;s;
+AV-00204;Hay una alcantarilla abierta en mitad de la calle en Mieres, junto al cruce, y pasan muchos coches;calle La Vega;Ayuntamiento;dia;0.0;ninguna;alta;False;Ayuntamiento;Crítica;True;True;True;n;severidad Alta
+AV-00366;Varias farolas apagadas en la avenida de Lugo, y pasan muchos coches;avenida de Lugo;Ayuntamiento;dia;13.5;ninguna;alta;False;Ayuntamiento;Baja;False;False;False;s;
+AV-00339;ramas en el borde de la calzada de la calle fray ceferino en oviedo, junto al cruce!;calle Fray Ceferino;Ayuntamiento;noche;11.4;ninguna;alta;False;Ayuntamiento;Media;False;False;False;s;
+AV-00087;Existe una senal de trafico caida tras un temporal en Langreo, junto al cruce con la que esta cayendo...;calle Dorado;Ayuntamiento;crepusculo;33.0;ninguna;alta;False;Ayuntamiento;Media;False;False;False;s;
+AV-00656;Carretera cortada por un desprendimiento, tierra y arboles en los dos carriles.;A-8;Estado;noche;33.8;amarilla;alta;True;Conservación de carreteras;Crítica;True;True;True;s;
+AV-00797;La bionda de la curva esta arrancada!;N-630;Estado;dia;6.6;ninguna;media;True;Conservación de carreteras;Alta;True;False;True;s;
+AV-00126;señal de stop caída fuera de la calzada en mieres, junto al cruce;calle La Vega;Ayuntamiento;dia;0.0;ninguna;alta;False;Ayuntamiento;Media;False;False;False;s;
+AV-00741;El asfalto está algo levantado en el arcén en el km 19;AS-17;Principado;dia;11.8;ninguna;baja;False;Conservación de carreteras;Baja;False;False;False;n;severidad Media
+AV-00837;Vertido de producto químico en la calzada, huele muy fuerte, y pasan muchos coches;calle Manuel Llaneza;Ayuntamiento;crepusculo;0.0;ninguna;alta;False;Emergencias;Crítica;True;True;True;n;severidad Alta
+AV-00832;Hay un jabali muerto en mitad del carril de la AS-117 en el km 20!;AS-117;Principado;dia;33.6;ninguna;baja;True;Conservación de carreteras;Alta;True;True;False;s;
+AV-00870;Bache enorme en el carril de la AS-17 en el km 28;AS-17;Principado;dia;0.3;ninguna;media;False;Conservación de carreteras;Media;False;False;True;s;
+AV-00963;Bache muy profundo en mitad del carril en Avilés, y pasan muchos coches;calle Rivero;Ayuntamiento;dia;12.6;ninguna;alta;False;Ayuntamiento;Alta;True;False;True;s;
+AV-00113;El rio junto a la N-634 baja con espuma y color raro en el km 9!;N-634;Estado;dia;3.7;ninguna;alta;True;Medio ambiente;Media;False;False;True;s;
+AV-00796;Hay un agujero grande en la calzada en Avilés, casi reviento una rueda, y pasan muchos coches!;calle Rivero;Ayuntamiento;crepusculo;22.0;amarilla;alta;False;Ayuntamiento;Alta;True;False;True;s;
+AV-00569;Moto accidentada de Gijón, a la altura del número 71, el motorista no se levanta;avenida de Schulz;Ayuntamiento;dia;;ninguna;alta;False;Emergencias;Crítica;True;True;False;s;
+AV-00829;Animal atropellado en la calzada en el km 20.;AS-117;Principado;dia;5.6;ninguna;media;True;Conservación de carreteras;Alta;True;True;False;n;severidad Media
+AV-00928;El río junto a la N-634 baja con espuma y color raro;N-634;Estado;dia;0.0;ninguna;alta;False;Medio ambiente;Media;False;False;True;s;
+AV-00409;Hay una senal tirada en la acera de la avenida de la Constitucion de Langreo, a la altura del numero 35, y es de noche, no se ve nada;avenida de la Constitución;Ayuntamiento;noche;0.0;ninguna;media;False;Ayuntamiento;Media;False;False;False;s;
+AV-00408;se ha detectado una balsa de agua peligrosa en la n-630 cerca de campomanes con la que está cayendo;N-630;Estado;dia;22.3;ninguna;media;True;Conservación de carreteras;Alta;True;True;False;s;
+AV-00663;Un zorro atropellado pero vivo en el arcén cerca de Pola de Laviana.;AS-117;Principado;noche;3.0;ninguna;media;True;Medio ambiente;Media;False;False;False;s;
+AV-00850;No funciona el semáforo, los coches pasan como pueden, y es de noche, no se ve nada;avenida de Lugo;Ayuntamiento;noche;0.0;ninguna;media;False;Ayuntamiento;Alta;True;True;False;s;
+AV-00900;Señal de stop caída fuera de la calzada cerca de Riaño, y es de noche, no se ve nada;AS-17;Principado;noche;14.2;ninguna;alta;False;Conservación de carreteras;Media;False;False;False;s;
+AV-00547;señal de stop caída fuera de la calzada!;calle La Cámara;Ayuntamiento;dia;3.9;ninguna;alta;False;Ayuntamiento;Media;False;False;False;s;
+AV-00205;Un zorro atropellado pero vivo en el arcén en el km 5 porfa!;N-630;Estado;dia;9.9;ninguna;baja;True;Medio ambiente;Media;False;False;False;s;
+AV-00156;existe una senal de trafico caida tras un temporal en aviles, junto al cruce, y pasan muchos coches;calle La Cámara;Ayuntamiento;dia;0.0;ninguna;alta;False;Ayuntamiento;Media;False;False;False;s;
+AV-00092;El río junto a la AS-15 baja con espuma y color raro en el km 7;AS-15;Principado;dia;0.8;ninguna;alta;False;Medio ambiente;Media;False;False;True;s;
+AV-00397;Baldosas levantadas en la acera de la calle Manuel Llaneza en Mieres!;calle Manuel Llaneza;Ayuntamiento;dia;0.0;ninguna;media;False;Ayuntamiento;Baja;False;False;False;s;
+AV-00057;La senal de la curva esta muy sucia y casi no se lee pasado Arenas de Cabrales;AS-114;Principado;dia;0.0;ninguna;baja;True;Conservación de carreteras;Baja;False;False;False;s;
+AV-00754;mancha de aceite grande en la calzada de la avenida pablo iglesias en gijón, junto al cruce;avenida Pablo Iglesias;Ayuntamiento;dia;32.4;amarilla;media;False;Ayuntamiento;Crítica;True;True;False;n;severidad Alta
+AV-00330;Senal de stop caida fuera de la calzada cerca de Gijon porfa...;A-8;Estado;dia;0.0;ninguna;media;False;Conservación de carreteras;Media;False;False;False;s;
+AV-00455;Vehiculo volcado fuera de la carretera, puede haber alguien dentro...;A-66;Estado;crepusculo;0.0;ninguna;media;False;Emergencias;Crítica;False;True;False;s;
+AV-00228;El asfalto está algo levantado en el borde de la calzada de Langreo, a la altura del número 80...;avenida de la Constitución;Ayuntamiento;noche;0.0;desconocido;media;False;Ayuntamiento;Baja;False;False;False;s;
+AV-00860;Se ha detectado una balsa de agua peligrosa en la AS-17 cerca de Riaño...;AS-17;Principado;noche;16.7;ninguna;media;False;Conservación de carreteras;Crítica;True;True;False;s;
+AV-00768;La carretera está helada a la altura del km 10, patinan los coches...;N-630;Estado;dia;9.9;amarilla;media;True;Conservación de carreteras;Crítica;True;True;False;s;
+AV-00081;farola fundida en la calle uría en oviedo, junto al cruce, y pasan muchos coches porfa.;calle Uría;Ayuntamiento;dia;0.0;ninguna;alta;False;Ayuntamiento;Baja;False;False;False;s;
+AV-00696;un camión cisterna pierde líquido en la calle la vega...;calle La Vega;Ayuntamiento;dia;0.0;desconocido;alta;False;Emergencias;Crítica;True;True;True;n;severidad Alta
+AV-00848;Se ha caído un árbol y ocupa toda la calzada en el km 39;AS-117;Principado;dia;3.7;amarilla;baja;True;Conservación de carreteras;Crítica;True;True;True;s;
+AV-00141;no funciona el semáforo en mieres, los coches pasan como pueden;calle La Vega;Ayuntamiento;dia;0.0;ninguna;alta;False;Ayuntamiento;Alta;True;True;False;s;
+AV-00369;tapa de registro levantada en el carril...;avenida de Galicia;Ayuntamiento;noche;0.0;ninguna;media;False;Ayuntamiento;Crítica;True;True;True;n;severidad Alta
+AV-00617;hay aceite en la calle de aviles, a la altura del numero 79;calle Rivero;Ayuntamiento;dia;;amarilla;media;False;Ayuntamiento;Crítica;True;True;False;n;severidad Alta
+AV-00447;Alguien ha tirado escombros en la cuneta de la AS-II...;AS-II;Principado;noche;13.5;ninguna;media;False;Medio ambiente;Baja;False;False;False;s;
+AV-00994;Señal descolorida en la N-630 pasado Pajares, y es de noche, no se ve nada;N-630;Estado;noche;0.0;ninguna;baja;True;Conservación de carreteras;Baja;False;False;False;s;
+AV-00047;No sé qué es pero hay algo en el carril, y pasan muchos coches;A-8;Estado;dia;0.9;ninguna;alta;False;Conservación de carreteras;Alta;True;True;True;s;
+AV-00589;Bolsas de basura abandonadas junto a la carretera a la altura del km 0.;AS-227;Principado;dia;28.0;amarilla;baja;True;Medio ambiente;Baja;False;False;False;s;
+AV-00513;El asfalto está algo levantado en el borde de la calzada de Langreo, a la altura del número 16;avenida de la Constitución;Ayuntamiento;dia;12.6;ninguna;media;False;Ayuntamiento;Baja;False;False;False;s;
+AV-00766;Gasoil derramado en la curva en el km 4, las motos resbalan;N-630;Estado;noche;0.0;ninguna;alta;True;Conservación de carreteras;Crítica;True;True;False;n;severidad Alta
+AV-00096;falta la tapa de una alcantarilla en la calzada de la calle corrida en gijon porfa;calle Corrida;Ayuntamiento;dia;0.0;ninguna;alta;False;Ayuntamiento;Crítica;True;True;True;n;severidad Alta
+AV-00443;La calzada se está hundiendo, ay un socavón en el carril derecho, y pasan muchos coches;A-66;Estado;dia;0.0;ninguna;alta;True;Conservación de carreteras;Crítica;True;True;True;s;
+AV-00157;Un coche se ha caido por el terraplen de la A-8 cerca de Llanes...;A-8;Estado;dia;0.0;ninguna;media;False;Emergencias;Crítica;False;True;False;s;
+AV-00826;Existe una senal de trafico caida tras un temporal en Mieres, junto al cruce, y pasan muchos coches porfa;calle La Vega;Ayuntamiento;dia;0.0;ninguna;alta;False;Ayuntamiento;Media;False;False;False;s;
+AV-00100;varias farolas apagadas en la calle fray ceferino de oviedo, a la altura del numero 67;calle Fray Ceferino;Ayuntamiento;dia;0.0;ninguna;media;False;Ayuntamiento;Baja;False;False;False;s;
+AV-00938;Senal descolorida en la calle Uria;calle Uría;Ayuntamiento;noche;0.0;ninguna;media;False;Ayuntamiento;Baja;False;False;False;s;

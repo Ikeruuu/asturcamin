@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AsturCamín</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root { --baja:#2e9e5b; --media:#d9a400; --alta:#e8710a; --critica:#d93025; --fondo:#f6f7f8; --texto:#1d2329; --suave:#5f6b76; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color:var(--texto); background:var(--fondo); }
+  .app { display:grid; grid-template-columns: 340px 1fr 360px; height:100vh; }
+  aside { padding:16px; overflow-y:auto; background:#fff; }
+  aside + main { border-left:1px solid #e3e6e8; }
+  main + aside { border-left:1px solid #e3e6e8; }
+  h1 { font-size:20px; margin:0 0 4px; } h2 { font-size:15px; margin:20px 0 8px; }
+  p.sub { margin:0 0 16px; color:var(--suave); font-size:13px; }
+  textarea { width:100%; min-height:90px; padding:8px; font:inherit; border:1px solid #cfd5da; border-radius:8px; }
+  button { font:inherit; padding:8px 12px; border-radius:8px; border:1px solid #cfd5da; background:#fff; cursor:pointer; }
+  button.primario { background:#1d2329; color:#fff; border-color:#1d2329; width:100%; margin-top:8px; }
+  .fila { display:flex; gap:8px; align-items:center; margin-top:8px; font-size:13px; color:var(--suave); }
+  #mapa { height:100vh; }
+  .tarjeta { border:1px solid #e3e6e8; border-radius:10px; padding:10px 12px; margin-bottom:8px; background:#fff; }
+  .tarjeta .cab { display:flex; justify-content:space-between; gap:8px; font-weight:600; font-size:14px; }
+  .tarjeta .txt { font-size:13px; margin:6px 0; }
+  .tarjeta .meta { font-size:12px; color:var(--suave); }
+  .chip { font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; color:#fff; white-space:nowrap; }
+  .Baja{background:var(--baja)} .Media{background:var(--media)} .Alta{background:var(--alta)} .Crítica{background:var(--critica)}
+  .revision { color:var(--critica); font-weight:600; }
+  .acciones { display:flex; gap:6px; margin-top:8px; }
+  .acciones button { font-size:12px; padding:4px 8px; }
+  #resultado { font-size:13px; margin-top:12px; }
+  @media (max-width: 900px) { .app { grid-template-columns:1fr; height:auto; } #mapa { height:55vh; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <h1>AsturCamín</h1>
+    <p class="sub">Avisa de una incidencia en la carretera</p>
+    <textarea id="texto" placeholder="Ej.: hay una roca ocupando un carril en la AS-114"></textarea>
+    <div class="fila">
+      <button id="btnUbicacion" type="button">Usar mi ubicación</button>
+      <span id="ubicacion">o pulsa en el mapa</span>
+    </div>
+    <button class="primario" id="btnEnviar" type="button">Enviar aviso</button>
+    <div id="resultado"></div>
+  </aside>
+
+  <main><div id="mapa"></div></main>
+
+  <aside>
+    <h1>Panel del operador</h1>
+    <p class="sub">Avisos ordenados por severidad</p>
+    <div id="cola"></div>
+  </aside>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const API = "http://localhost:8000";
+const COLOR = { "Baja":"#2e9e5b", "Media":"#d9a400", "Alta":"#e8710a", "Crítica":"#d93025" };
+
+const mapa = L.map("mapa").setView([43.36, -5.85], 9);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19, attribution: "&copy; OpenStreetMap"
+}).addTo(mapa);
+
+let punto = null, marcaPunto = null;
+const capaAvisos = L.layerGroup().addTo(mapa);
+
+function fijarPunto(lat, lon) {
+  punto = { lat, lon };
+  if (marcaPunto) marcaPunto.remove();
+  marcaPunto = L.marker([lat, lon]).addTo(mapa);
+  document.getElementById("ubicacion").textContent = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+}
+mapa.on("click", e => fijarPunto(e.latlng.lat, e.latlng.lng));
+
+document.getElementById("btnUbicacion").onclick = () => {
+  if (!navigator.geolocation) return alert("Tu navegador no permite geolocalización");
+  navigator.geolocation.getCurrentPosition(
+    p => { fijarPunto(p.coords.latitude, p.coords.longitude); mapa.setView([p.coords.latitude, p.coords.longitude], 13); },
+    () => alert("No se pudo obtener la ubicación; pulsa en el mapa")
+  );
+};
+
+document.getElementById("btnEnviar").onclick = async () => {
+  const texto = document.getElementById("texto").value.trim();
+  const res = document.getElementById("resultado");
+  if (!texto) return res.textContent = "Escribe qué ocurre.";
+  if (!punto) return res.textContent = "Indica la ubicación.";
+  res.textContent = "Enviando…";
+  try {
+    const r = await fetch(`${API}/triaje`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ texto, lat: punto.lat, lon: punto.lon })
+    });
+    const d = await r.json();
+    res.innerHTML = `Aviso <b>${d.id_aviso}</b> recibido.<br>Derivado a <b>${dest(d.destinatario)}</b> · ${d.latencia_ms} ms`;
+    document.getElementById("texto").value = "";
+    cargar();
+  } catch (e) {
+    res.textContent = "No se pudo conectar con el servicio de triaje.";
+  }
+};
+
+const pct = x => `${Math.round(x * 100)} %`;
+const dest = d => d === "revision_humana" ? "Pendiente de revisión" : d;
+
+function tarjeta(a) {
+  const conf = a.severidad_probabilidades[a.severidad];
+  return `<div class="tarjeta">
+    <div class="cab"><span>${dest(a.destinatario)}</span><span class="chip ${a.severidad}">${a.severidad} ${pct(conf)}</span></div>
+    <div class="txt">${a.texto.replace(/</g, "&lt;")}</div>
+    <div class="meta">Riesgo vial ${pct(a.riesgo_vial)} · Urgente ${pct(a.urgente)} · Inspección ${pct(a.inspeccion)}</div>
+    <div class="meta">${a.factores.length ? "Factores: " + a.factores.join(", ") : "Sin factores agravantes"} · ${a.fecha_hora.replace("T", " ")}</div>
+    ${a.revision_humana ? '<div class="meta revision">Revisión humana</div>' : ""}
+    <div class="acciones"><button>Confirmar</button><button>Corregir</button></div>
+  </div>`;
+}
+
+async function cargar() {
+  try {
+    const avisos = await (await fetch(`${API}/avisos`)).json();
+    document.getElementById("cola").innerHTML = avisos.map(tarjeta).join("") || '<p class="sub">Sin avisos todavía</p>';
+    capaAvisos.clearLayers();
+    avisos.forEach(a => L.circleMarker([a.lat, a.lon], {
+      radius: 9, color: "#fff", weight: 2, fillColor: COLOR[a.severidad], fillOpacity: 0.95
+    }).bindPopup(`<b>${a.severidad}</b> · ${dest(a.destinatario)}<br>${a.texto.replace(/</g, "&lt;")}`).addTo(capaAvisos));
+  } catch (e) { /* el servicio aún no está arrancado */ }
+}
+cargar();
+setInterval(cargar, 5000);
+</script>
+</body>
+</html>

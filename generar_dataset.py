@@ -114,9 +114,14 @@ inc("ramas_arcen", CONS, AYTO, 0, ["noche", "alerta"], False, False, [
     "Ramas en el arcén de la {via}{ref}{ctx}",
     "hay unas ramas caídas en la cuneta{ref}, no molestan mucho{ctx}",
     "restos de poda en el borde de la carretera{ref}{ctx}"])
-inc("bache_pequeno", CONS, AYTO, 0, ["trafico"], False, False, [
+# Revisión v1: "bachecillo / bache pequeño" siempre Baja; "asfalto levantado" es Media en
+# carretera y Baja en ciudad (Media solo con mucho tráfico)
+inc("bache_pequeno", CONS, AYTO, 0, [], False, False, [
     "Bache pequeño en el arcén de la {via}{ref}{ctx}",
-    "hay un bachecillo en el borde{ref}, nada grave{ctx}",
+    "hay un bachecillo en el borde{ref}, nada grave{ctx}"])
+inc("asfalto_levantado_i", CONS, None, 1, [], False, False, [
+    "El asfalto está algo levantado en el arcén{ref}{ctx}"])
+inc("asfalto_levantado_u", None, AYTO, 0, ["trafico"], False, False, [
     "El asfalto está algo levantado en el arcén{ref}{ctx}"])
 inc("bache_grande", CONS, AYTO, 1, ["noche", "lluvia", "trafico"], True, True, [
     "Bache enorme en el carril de la {via}{ref}{ctx}",
@@ -151,7 +156,8 @@ inc("farola_apagada", None, AYTO, 0, ["noche"], False, False, [
     "Varias farolas apagadas en la {via}{ref}{ctx}",
     "la calle está a oscuras, no funciona el alumbrado{ref}{ctx}",
     "farola fundida en la {via}{ref}{ctx}"])
-inc("tapa_alcantarilla", None, AYTO, 2, ["noche", "trafico"], True, True, [
+# Revisión v1: alcantarilla abierta siempre Alta, el contexto no la sube a Crítica
+inc("tapa_alcantarilla", None, AYTO, 2, [], True, True, [
     "Falta la tapa de una alcantarilla en la calzada de la {via}{ref}{ctx}",
     "hay una alcantarilla abierta en mitad de la calle{ref}{ctx}",
     "tapa de registro levantada en el carril{ref}{ctx}"])
@@ -159,7 +165,8 @@ inc("acera_rota", None, AYTO, 0, [], False, False, [
     "Baldosas levantadas en la acera de la {via}{ref}{ctx}",
     "la acera está rota{ref}{ctx}",
     "acera hundida junto al paso de peatones{ref}{ctx}"])
-inc("barrera_danada", CONS, None, 1, ["montana", "noche"], False, True, [
+# Revisión v1: barrera dañada siempre Alta (riesgo, pero reparación programable)
+inc("barrera_danada", CONS, None, 2, [], False, True, [
     "Quitamiedos roto en la {via}{ref}{ctx}",
     "la bionda de la curva está arrancada{ref}{ctx}",
     "barrera de seguridad doblada tras un golpe{ref}{ctx}"], riesgo=True, planif=True)
@@ -172,10 +179,12 @@ inc("nieve_puerto", CONS, None, 2, ["alerta", "noche"], True, False, [
     "nieve en la calzada{ref}, sin cadenas no se sube{ctx}",
     "La quitanieves no ha pasado y hay nieve acumulada{ref}{ctx}"],
     forzar={"estacion": "invierno", "temp_max": 1, "montana": True})
-inc("animal_muerto", CONS, None, 2, ["noche", "trafico"], True, False, [
+# Revisión v1: animal grande (jabalí, corzo) en el carril siempre Alta; animal sin especificar, Media
+inc("animal_grande", CONS, None, 2, [], True, False, [
     "Hay un jabalí muerto en mitad del carril de la {via}{ref}{ctx}",
-    "animal atropellado en la calzada{ref}{ctx}",
     "un corzo muerto en la carretera{ref}, ocupa el carril{ctx}"])
+inc("animal_pequeno", CONS, None, 1, [], True, False, [
+    "animal atropellado en la calzada{ref}{ctx}"])
 inc("ganado_suelto", TRAF, None, 2, ["noche"], True, False, [
     "Vacas sueltas por la {via}{ref}{ctx}",
     "hay caballos en la carretera{ref}{ctx}",
@@ -203,14 +212,17 @@ inc("incendio_cuneta", EMER, None, 3, [], False, False, [
     "Fuego en la cuneta de la {via}{ref}{ctx}",
     "se está quemando el monte al lado de la carretera{ref}{ctx}",
     "hay humo y llamas junto a la {via}{ref}{ctx}"], urg=True, forzar={"lluvia_max": 0}, riesgo=True)
-inc("vertido_peligroso", EMER, EMER, 3, [], True, True, [
+# Revisión v1: vertido peligroso es Alta (urgente siempre), no Crítica
+inc("vertido_peligroso", EMER, EMER, 2, [], True, True, [
     "Un camión cisterna pierde líquido en la {via}{ref}{ctx}",
     "vertido de producto químico en la calzada{ref}, huele muy fuerte{ctx}"], urg=True)
-inc("mancha_aceite", CONS, AYTO, 2, ["lluvia", "noche"], True, False, [
+# Revisión v1: mancha de aceite siempre Alta
+inc("mancha_aceite", CONS, AYTO, 2, [], True, False, [
     "Mancha de aceite grande en la calzada de la {via}{ref}{ctx}",
     "gasoil derramado en la curva{ref}, las motos resbalan{ctx}",
     "hay aceite en la carretera{ref}{ctx}"])
-inc("objeto_caido", TRAF, TRAF, 2, ["noche", "trafico"], True, False, [
+# Revisión v1: objeto caído es Media
+inc("objeto_caido", TRAF, TRAF, 1, [], True, False, [
     "Se le ha caído la carga a un camión en la {via}{ref}{ctx}",
     "hay un neumático en mitad del carril{ref}{ctx}",
     "objetos caídos de una furgoneta en la calzada{ref}{ctx}"])
@@ -396,7 +408,8 @@ def agravantes_activos(inc_def, estado):
             activos.append("montana")
         elif a == "trafico" and estado["intensidad_trafico"] == "alta":
             activos.append("trafico")
-    if estado["historial_zona"] == "tramo_peligroso" and inc_def["calzada"]:
+    # El tramo peligroso solo agrava tipos que admiten agravantes (los de nivel fijo no se mueven)
+    if estado["historial_zona"] == "tramo_peligroso" and inc_def["calzada"] and inc_def["agr"]:
         activos.append("tramo_peligroso")
     return activos
 
