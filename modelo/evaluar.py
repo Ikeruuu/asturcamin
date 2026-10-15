@@ -1,18 +1,19 @@
 """
-AsturCamín · Evaluación del modelo de decisión sobre avisos de entrenamiento (paso 3)
+AsturCamín · Evaluación del modelo de decisión (paso 3)
 
-Mide aciertos sobre N avisos de datos/avisos_train.jsonl (NUNCA usa el test) y
-permite comparar configuraciones:
+Mide aciertos sobre N avisos y permite comparar configuraciones:
 
-  --checkpoint  multilingual | english | typed-decisions
-  --estado      json  (el estado tal cual)
-                texto (el estado convertido en frases fijas con plantilla; no es texto generado)
-  --etiquetas   nombres (Conservación de carreteras, Tráfico…)
-                neutras  (A, B, C… con la descripción como criterio)
+  --checkpoint    multilingual | english | typed-decisions   (modelos base de Laya)
+  --modelo-local  carpeta de un modelo afinado (por ejemplo, el que sale de Kaggle)
+  --estado        json | texto   (texto = plantilla fija de modelo/formato.py)
+  --etiquetas     nombres | neutras
+  --datos         train (por defecto) | val (la validación del afinado)
 
 Uso (desde la raíz, con el .venv activado):
-    python modelo/evaluar.py --n 100 --checkpoint multilingual --estado texto --etiquetas neutras
+    python modelo/evaluar.py --n 100 --estado texto --etiquetas nombres
+    python modelo/evaluar.py --modelo-local modelo/laya_asturcamin --datos val --n 200
 
+NUNCA usa datos/avisos_test.jsonl: ese conjunto es solo para la medida final.
 Guarda las predicciones en modelo/resultados/<configuración>.csv para analizar fallos.
 """
 
@@ -26,73 +27,30 @@ from pathlib import Path
 
 import laya
 
-RAIZ = Path(__file__).resolve().parent.parent
-CONTRATO = json.loads((RAIZ / "contrato.json").read_text(encoding="utf-8"))
-NIVELES = [n["nombre"] for n in CONTRATO["preguntas"]["severidad"]["niveles"]]
-OPCIONES = CONTRATO["preguntas"]["organismo"]["opciones"]
-NOULS = ("riesgo_vial", "urgente", "inspeccion")
-
-# Las preguntas sí/no formuladas como preguntas (Laya las espera así en sus ejemplos)
-PREGUNTAS_NOUL = {
-    "riesgo_vial": "¿Supone esta incidencia un riesgo inmediato para quienes circulan por la vía?",
-    "urgente": "¿Hay que intervenir de inmediato, en lugar de programar la reparación para otro día?",
-    "inspeccion": "¿Hace falta que un técnico vaya al lugar a inspeccionar antes de actuar?",
-}
-
-LUZ = {"dia": "de día", "crepusculo": "al anochecer o amanecer", "noche": "de noche"}
+from formato import NIVELES, NOULS, RAIZ, construir_preguntas, estado_como_texto
 
 
-def cargar_modelo(checkpoint):
+def cargar_modelo(checkpoint, modelo_local):
+    if modelo_local:
+        return laya.Agent(modelo_local, device="cpu")
     if checkpoint == "english":
         return laya.load("convaiinnovations/laya")
     return laya.load("convaiinnovations/laya", subfolder=checkpoint)
 
 
-def estado_como_texto(e):
-    """Convierte el estado en frases fijas. Es una plantilla determinista, no texto generado."""
-    def si_no(v):
-        return "sí" if v else ("no" if v is False else "desconocido")
-    lluvia = "desconocida" if e["lluvia_24h_mm"] is None else f'{e["lluvia_24h_mm"]} mm'
-    lineas = [
-        f'Aviso ciudadano: {e["texto"]}',
-        f'Lugar: {e["via"]}, vía {e["tipo_via"]} de titularidad {e["titular"]}'
-        + (", zona de montaña" if e["zona_montana"] else ""),
-        f'Momento: {LUZ.get(e["luz"], e["luz"])}, {e["estacion"]}',
-        f'Tiempo: lluvia en 24 h {lluvia}, aviso meteorológico {e["alerta_aemet"]}, '
-        f'temperatura {e["temperatura_c"]} °C',
-        # Ojo: no usar la palabra "Tráfico" aquí; el modelo la confunde con la opción Tráfico
-        f'Circulación en la vía: intensidad {e["intensidad_trafico"]}',
-        f'Historial de la zona: {e["historial_zona"].replace("_", " ")}; riesgo de fauna {e["riesgo_fauna"]}',
-        f'Vía cortada: {si_no(e["via_cortada"])}; cadenas obligatorias: {si_no(e["cadenas"])}; '
-        f'incidencia oficial cerca: {si_no(e["incidencia_oficial_cerca"])}; '
-        f'avisos parecidos cerca: {e["avisos_similares_cerca"]}',
-    ]
-    return "\n".join(lineas)
+def cargar_avisos(datos):
+    if datos == "val":
+        ruta = RAIZ / "datos" / "finetune" / "finetune_val.jsonl"
+        filas = [json.loads(l) for l in ruta.read_text(encoding="utf-8").splitlines()]
+        ids = {f["id"] for f in filas}
+        train = [json.loads(l) for l in (RAIZ / "datos" / "avisos_train.jsonl").read_text(encoding="utf-8").splitlines()]
+        return [a for a in train if a["id"] in ids]
+    return [json.loads(l) for l in (RAIZ / "datos" / "avisos_train.jsonl").read_text(encoding="utf-8").splitlines()]
 
 
-def construir_preguntas(etiquetas):
-    p = CONTRATO["preguntas"]
-    if etiquetas == "neutras":
-        claves = [chr(ord("A") + i) for i in range(len(OPCIONES))]
-        criterio = {k: f"{nombre}. {desc}" for k, (nombre, desc) in zip(claves, OPCIONES.items())}
-        mapa = dict(zip(claves, OPCIONES))
-    else:
-        criterio = dict(OPCIONES)
-        mapa = {k: k for k in OPCIONES}
-    q = {
-        "organismo": {"type": "choice", "instructions": p["organismo"]["instrucciones"], "criteria": criterio},
-        "severidad": {"type": "score", "instructions": p["severidad"]["instrucciones"],
-                      "criteria": [f'{n["nombre"]}: {n["criterio"]}' for n in p["severidad"]["niveles"]]},
-    }
-    for k in NOULS:
-        q[k] = {"type": "noul", "instructions": PREGUNTAS_NOUL[k]}
-    return q, mapa
-
-
-def muestra_estratificada(n, semilla):
-    filas = [json.loads(l) for l in (RAIZ / "datos" / "avisos_train.jsonl").read_text(encoding="utf-8").splitlines()]
+def muestra_estratificada(avisos, n, semilla):
     grupos = defaultdict(list)
-    for f in filas:
+    for f in avisos:
         grupos[f["etiquetas"]["organismo"]].append(f)
     rng = random.Random(semilla)
     por_grupo = max(1, n // len(grupos))
@@ -108,19 +66,22 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=100)
     ap.add_argument("--checkpoint", default="multilingual", choices=["multilingual", "english", "typed-decisions"])
+    ap.add_argument("--modelo-local", default=None)
     ap.add_argument("--estado", default="texto", choices=["json", "texto"])
-    ap.add_argument("--etiquetas", default="neutras", choices=["nombres", "neutras"])
+    ap.add_argument("--etiquetas", default="nombres", choices=["nombres", "neutras"])
+    ap.add_argument("--datos", default="train", choices=["train", "val"])
     ap.add_argument("--semilla", type=int, default=7)
     args = ap.parse_args()
-    nombre = f"{args.checkpoint}_{args.estado}_{args.etiquetas}"
+    base = "afinado" if args.modelo_local else args.checkpoint
+    nombre = f"{base}_{args.datos}_{args.estado}_{args.etiquetas}"
 
-    print(f"Configuración: {nombre} · {args.n} avisos de entrenamiento")
+    avisos = muestra_estratificada(cargar_avisos(args.datos), args.n, args.semilla)
+    print(f"Configuración: {nombre} · {len(avisos)} avisos")
     t0 = time.perf_counter()
-    agente = cargar_modelo(args.checkpoint)
+    agente = cargar_modelo(args.checkpoint, args.modelo_local)
     print(f"Modelo cargado en {time.perf_counter() - t0:.1f} s")
 
     preguntas, mapa = construir_preguntas(args.etiquetas)
-    avisos = muestra_estratificada(args.n, args.semilla)
 
     filas, latencias = [], []
     ok_org = ok_sev = ok_sev1 = 0
