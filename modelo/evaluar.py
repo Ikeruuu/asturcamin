@@ -60,7 +60,8 @@ def estado_como_texto(e):
         f'Momento: {LUZ.get(e["luz"], e["luz"])}, {e["estacion"]}',
         f'Tiempo: lluvia en 24 h {lluvia}, aviso meteorológico {e["alerta_aemet"]}, '
         f'temperatura {e["temperatura_c"]} °C',
-        f'Tráfico en la vía: intensidad {e["intensidad_trafico"]}',
+        # Ojo: no usar la palabra "Tráfico" aquí; el modelo la confunde con la opción Tráfico
+        f'Circulación en la vía: intensidad {e["intensidad_trafico"]}',
         f'Historial de la zona: {e["historial_zona"].replace("_", " ")}; riesgo de fauna {e["riesgo_fauna"]}',
         f'Vía cortada: {si_no(e["via_cortada"])}; cadenas obligatorias: {si_no(e["cadenas"])}; '
         f'incidencia oficial cerca: {si_no(e["incidencia_oficial_cerca"])}; '
