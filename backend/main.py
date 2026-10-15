@@ -11,7 +11,14 @@ Necesita, además de requirements.txt, el paquete laya (ya instalado en el .venv
 y el modelo afinado en modelo/laya_asturcamin/ (no está en GitHub: se comparte aparte).
 
 Estado actual:
-  - construir_estado(): luz y estación calculadas; el resto del contexto sigue 'desconocido' (paso 4)
+  - construir_estado(): luz y estación calculadas; vía, titular, tipo de vía, lluvia, temperatura, montaña,
+    fauna, historial y tráfico salen del contexto real (backend/contexto.py + carpeta contexto/).
+    Si falta contexto/ o pandas, esos campos quedan 'desconocido' y el servicio sigue funcionando.
+    incidencia_oficial_cerca, via_cortada y cadenas salen del feed en tiempo real de la DGT
+    (backend/incidencias_dgt.py), que también se pinta en el mapa.
+    alerta_aemet sale de los avisos oficiales de AEMET vía MeteoAlarm (backend/avisos_aemet.py).
+    avisos_similares_cerca y la agrupación en incidencias, de backend/incidencias.py
+  - Revisión del operador (Confirmar / Corregir) y avisos simulados a los organismos: backend/incidencias.py
   - decidir(): MODELO REAL (Laya afinado). Si no encuentra el modelo, usa una respuesta de prueba
     y lo indica en el campo "modelo" de la salida
   - aplicar_reglas(): usa reglas_fijas y umbrales de contrato.json
@@ -25,7 +32,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -38,6 +45,7 @@ CONTRATO = json.loads((RAIZ / "contrato.json").read_text(encoding="utf-8"))
 NIVELES = [n["nombre"] for n in CONTRATO["preguntas"]["severidad"]["niveles"]]
 ORGANISMOS = list(CONTRATO["preguntas"]["organismo"]["opciones"])
 MODELO_DIR = RAIZ / "modelo" / "laya_asturcamin"
+sys.path.insert(0, str(RAIZ / "backend"))
 PREGUNTAS, _ = construir_preguntas("nombres")
 
 app = FastAPI(title="AsturCamín · Triaje")
@@ -45,6 +53,28 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 
 _agente = None
 _error_modelo = None
+_contexto = None
+_error_contexto = None
+
+from incidencias_dgt import FeedDGT  # noqa: E402
+from avisos_aemet import FeedAEMET  # noqa: E402
+from incidencias import Gestor  # noqa: E402
+DGT = FeedDGT()
+AEMET = FeedAEMET()
+GESTOR = Gestor()
+
+
+def cargar_contexto():
+    """Carga una sola vez los datos reales de contexto/. Devuelve None si no están."""
+    global _contexto, _error_contexto
+    if _contexto is None and _error_contexto is None:
+        try:
+            from contexto import ContextoAsturCamin
+            _contexto = ContextoAsturCamin()
+        except Exception as e:  # sin contexto el triaje sigue, con los campos en 'desconocido'
+            _error_contexto = f"{type(e).__name__}: {e}"
+            print(f"[AsturCamín] Contexto NO cargado ({_error_contexto}).")
+    return _contexto
 
 
 def cargar_agente():
@@ -69,6 +99,12 @@ def precargar_modelo():
     t0 = time.perf_counter()
     if cargar_agente() is not None:
         print(f"[AsturCamín] Modelo laya-asturcamin cargado en {time.perf_counter() - t0:.1f} s")
+    DGT.arrancar()  # se descarga en segundo plano; el triaje no espera
+    AEMET.arrancar()
+    t0 = time.perf_counter()
+    if cargar_contexto() is not None:
+        print(f"[AsturCamín] Contexto real cargado en {time.perf_counter() - t0:.1f} s "
+              f"({len(_contexto.t)} tramos de carretera)")
 
 # Salida y puesta de sol aproximadas en Asturias, hora local (decimal), por mes.
 # Suficiente para día/crepúsculo/noche; más adelante se puede calcular con astral por coordenadas.
@@ -88,7 +124,6 @@ def estacion_de(mes: int) -> str:
     return {12: "invierno", 1: "invierno", 2: "invierno", 3: "primavera", 4: "primavera", 5: "primavera",
             6: "verano", 7: "verano", 8: "verano"}.get(mes, "otono")
 
-AVISOS: list = []  # en memoria; más adelante SQLite
 
 
 class Aviso(BaseModel):
@@ -99,8 +134,8 @@ class Aviso(BaseModel):
     foto: Optional[str] = None  # base64 opcional; el modelo no la usa
 
 
-def construir_estado(a: Aviso) -> dict:
-    """Paso 4: aquí se calcula el contexto (vía, titularidad, AEMET, luz...)."""
+def construir_estado(a: Aviso):
+    """Estado del contrato para el modelo + contexto para mostrar al operador."""
     campos = CONTRATO["estado"]["campos"]
     estado = {}
     for nombre, d in campos.items():
@@ -114,7 +149,24 @@ def construir_estado(a: Aviso) -> dict:
     dt = datetime.fromisoformat(fecha_hora)
     estado.update(texto=a.texto, lat=a.lat, lon=a.lon, fecha_hora=fecha_hora,
                   luz=luz_de(dt), estacion=estacion_de(dt.month))
-    return estado
+    contexto = None
+    ctx = cargar_contexto()
+    if ctx is not None:
+        try:
+            campos, contexto = ctx.estado(a.texto, a.lat, a.lon, dt)
+            estado.update(campos)
+        except Exception as e:  # un fallo del contexto no debe tumbar el triaje
+            print(f"[AsturCamín] Error de contexto: {type(e).__name__}: {e}")
+    campos_dgt, cerca = DGT.campos_contrato(a.lat, a.lon)
+    estado.update(campos_dgt)
+    nivel_aemet, avisos_meteo = AEMET.alerta(a.lat, a.lon, dt, altitud=700 if estado.get("zona_montana") else None)
+    if nivel_aemet is not None:
+        estado["alerta_aemet"] = nivel_aemet
+    estado["avisos_similares_cerca"] = len(GESTOR.parecidos(a.texto, a.lat, a.lon, fecha_hora))
+    if contexto is not None:
+        contexto["incidencias_oficiales_cerca"] = cerca
+        contexto["avisos_meteo"] = avisos_meteo
+    return estado, contexto
 
 
 def decidir(estado: dict) -> dict:
@@ -147,7 +199,19 @@ def respuesta_prueba() -> dict:
     }
 
 
-def aplicar_reglas(estado: dict, dec: dict) -> dict:
+def derivar(organismo: str, estado: dict, contexto: Optional[dict] = None) -> str:
+    """Organismo -> destinatario concreto (reglas fijas del contrato, no las decide el modelo)."""
+    destinatario = organismo
+    regla = CONTRATO["reglas_fijas"]["derivacion_conservacion"]
+    if organismo == regla["si_organismo"]:
+        destinatario = regla["segun_titular"].get(estado.get("titular"), "revision_humana")
+    # Si le toca al ayuntamiento, se nombra el concreto (sale del concejo donde está el aviso)
+    if destinatario == "Ayuntamiento" and contexto and contexto.get("concejo"):
+        destinatario = f"Ayuntamiento de {contexto['concejo']}"
+    return destinatario
+
+
+def aplicar_reglas(estado: dict, dec: dict, contexto: Optional[dict] = None) -> dict:
     u = CONTRATO["umbrales"]
     org_p = dec["organismo_probabilidades"]
     organismo = max(org_p, key=org_p.get)
@@ -160,12 +224,9 @@ def aplicar_reglas(estado: dict, dec: dict) -> dict:
             severidad = "Alta"
 
     revision = confianza < u["confianza_minima_organismo"]
-    destinatario = organismo
-    regla = CONTRATO["reglas_fijas"]["derivacion_conservacion"]
-    if organismo == regla["si_organismo"]:
-        destinatario = regla["segun_titular"].get(estado.get("titular"), "revision_humana")
-        if destinatario == "revision_humana":
-            revision = True
+    destinatario = derivar(organismo, estado, contexto)
+    if destinatario == "revision_humana":
+        revision = True
 
     factores = [k for k in ("luz", "alerta_aemet", "zona_montana", "historial_zona", "intensidad_trafico")
                 if estado.get(k) in ("noche", "crepusculo", "naranja", "roja", True, "tramo_peligroso", "alta")]
@@ -183,6 +244,7 @@ def aplicar_reglas(estado: dict, dec: dict) -> dict:
         "inspeccion": dec["inspeccion"],
         "revision_humana": revision,
         "factores": factores,
+        "contexto": contexto,
         "modelo": dec.get("modelo"),
     }
 
@@ -190,29 +252,86 @@ def aplicar_reglas(estado: dict, dec: dict) -> dict:
 @app.post("/triaje")
 def triaje(aviso: Aviso):
     t0 = time.perf_counter()
-    estado = construir_estado(aviso)
-    salida = aplicar_reglas(estado, decidir(estado))
+    estado, contexto = construir_estado(aviso)
+    parecidos = GESTOR.parecidos(aviso.texto, aviso.lat, aviso.lon, estado["fecha_hora"])
+    salida = aplicar_reglas(estado, decidir(estado), contexto)
     salida.update(
         id_aviso=f"AV-{uuid.uuid4().hex[:8]}",
-        id_incidencia=None,  # paso 5: agrupación de duplicados
         latencia_ms=round((time.perf_counter() - t0) * 1000),
         lat=aviso.lat, lon=aviso.lon, texto=aviso.texto, fecha_hora=estado["fecha_hora"],
     )
-    AVISOS.append(salida)
+    incidencia = GESTOR.registrar(salida, estado, parecidos)
+    salida["n_avisos_incidencia"] = incidencia["n_avisos"]
+    salida["notificados"] = incidencia["notificados"]
     return salida
 
 
 @app.get("/avisos")
 def avisos():
-    """Para el mapa y el panel: los más graves primero, y dentro de cada nivel los más recientes."""
-    recientes = sorted(AVISOS, key=lambda a: a["fecha_hora"], reverse=True)
-    return sorted(recientes, key=lambda a: NIVELES.index(a["severidad"]), reverse=True)
+    """Una entrada por incidencia (los avisos repetidos van juntos): las más graves primero."""
+    return GESTOR.lista()
+
+
+class Revision(BaseModel):
+    accion: str                       # confirmar | corregir
+    severidad: Optional[str] = None   # solo al corregir
+    organismo: Optional[str] = None   # solo al corregir
+    nota: Optional[str] = None
+
+
+@app.post("/incidencias/{id_incidencia}/revision")
+def revisar(id_incidencia: str, r: Revision):
+    """El operador confirma o corrige. Se guarda para reentrenar y se avisa al organismo."""
+    if r.accion not in ("confirmar", "corregir"):
+        raise HTTPException(400, "accion debe ser confirmar o corregir")
+    if r.severidad and r.severidad not in NIVELES:
+        raise HTTPException(400, f"severidad debe ser una de {NIVELES}")
+    if r.organismo and r.organismo not in ORGANISMOS:
+        raise HTTPException(400, f"organismo debe ser uno de {ORGANISMOS}")
+    try:
+        return GESTOR.revisar(id_incidencia, r.accion, derivar, r.severidad, r.organismo, r.nota)
+    except KeyError:
+        raise HTTPException(404, f"No existe la incidencia {id_incidencia}")
+
+
+@app.get("/notificaciones")
+def notificaciones():
+    """Avisos enviados a los organismos (simulados), del más reciente al más antiguo."""
+    return list(reversed(GESTOR.notificaciones))
+
+
+@app.get("/avisos_meteo")
+def avisos_meteo():
+    """Avisos meteorológicos oficiales activos en Asturias (AEMET vía MeteoAlarm)."""
+    return {"fuente": AEMET.fuente, "actualizado": AEMET.actualizado, "error": AEMET.error,
+            "avisos": AEMET.activos()}
 
 
 @app.get("/")
 def inicio():
     """Abre la app (formulario, mapa y panel del operador) en http://localhost:8000/"""
     return FileResponse(RAIZ / "frontend" / "index.html")
+
+
+@app.get("/tramos")
+def tramos():
+    """Tramos con riesgo base alto o crítico (accidentes, geología, fauna, clima) para la capa del mapa."""
+    ctx = cargar_contexto()
+    return ctx.tramos_riesgo() if ctx is not None else []
+
+
+@app.get("/incidencias_oficiales")
+def incidencias_oficiales():
+    """Incidencias activas de la DGT en Asturias: obras, argayos, cortes, desperfectos, nieve..."""
+    return {"fuente": DGT.fuente, "actualizado": DGT.actualizado, "error": DGT.error,
+            "incidencias": DGT.incidencias}
+
+
+@app.get("/zonas_activas")
+def zonas_activas():
+    """Tramos junto a laderas con argayos activos o zonas con procesos de inundación (cartografía oficial)."""
+    ctx = cargar_contexto()
+    return ctx.zonas_activas() if ctx is not None else []
 
 
 @app.get("/contrato")
@@ -223,4 +342,9 @@ def contrato():
 @app.get("/salud")
 def salud():
     return {"modelo_cargado": _agente is not None, "modelo": "laya-asturcamin" if _agente else "prueba",
-            "error_modelo": _error_modelo, "avisos": len(AVISOS)}
+            "error_modelo": _error_modelo, "contexto_cargado": _contexto is not None,
+            "error_contexto": _error_contexto, "incidencias_dgt": len(DGT.incidencias),
+            "fuente_dgt": DGT.fuente, "error_dgt": DGT.error, "avisos_aemet": len(AEMET.activos()),
+            "fuente_aemet": AEMET.fuente, "error_aemet": AEMET.error,
+            "avisos": len(GESTOR.avisos), "incidencias": len(GESTOR.incidencias),
+            "notificaciones": len(GESTOR.notificaciones)}

@@ -3,7 +3,8 @@ __pycache__/
 *.pyc
 datos_check/
 .DS_Store
-modelo/laya_asturcamin/
+modelo/laya_asturcamin*/
 *.zip
 *.bundle
 modelo/resultados/
+datos/revisiones_operador.jsonl

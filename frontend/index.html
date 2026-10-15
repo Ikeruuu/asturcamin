@@ -21,7 +21,7 @@
   .fila { display:flex; gap:8px; align-items:center; margin-top:8px; font-size:13px; color:var(--suave); }
   #mapa { height:100vh; }
   .tarjeta { border:1px solid #e3e6e8; border-radius:10px; padding:10px 12px; margin-bottom:8px; background:#fff; }
-  .tarjeta .cab { display:flex; justify-content:space-between; gap:8px; font-weight:600; font-size:14px; }
+  .tarjeta .cab { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; font-weight:600; font-size:14px; }
   .tarjeta .txt { font-size:13px; margin:6px 0; }
   .tarjeta .meta { font-size:12px; color:var(--suave); }
   .chip { font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; color:#fff; white-space:nowrap; }
@@ -36,6 +36,46 @@
   .acciones { display:flex; gap:6px; margin-top:8px; }
   .acciones button { font-size:12px; padding:4px 8px; }
   #resultado { font-size:13px; margin-top:12px; }
+  .ctx { font-size:12px; color:var(--texto); background:var(--fondo); border-radius:6px; padding:5px 7px; margin-top:6px; }
+  .ctx b { font-weight:600; }
+  .capas { position:absolute; z-index:1000; top:10px; right:10px; max-width:270px; background:#fff; border-radius:8px;
+           padding:8px 10px; font-size:13px; box-shadow:0 1px 4px rgba(0,0,0,.25); }
+  .capas label { display:flex; gap:6px; align-items:flex-start; margin:3px 0; cursor:pointer; }
+  .capas .nota { font-size:11px; color:var(--suave); margin:0 0 4px 22px; }
+  .leyenda { display:flex; flex-wrap:wrap; gap:4px 10px; font-size:11px; color:var(--suave); margin:2px 0 6px 22px; }
+  .ico { width:26px; height:26px; border-radius:50%; background:#fff; border:2.5px solid #1d2329; display:flex;
+         align-items:center; justify-content:center; font-size:14px; box-shadow:0 1px 3px rgba(0,0,0,.35); }
+  main { position:relative; }
+  .pestanas { display:flex; gap:4px; margin:4px 0 12px; border-bottom:1px solid #e3e6e8; }
+  .pestanas button { border:none; border-bottom:2px solid transparent; border-radius:0; padding:6px 8px; font-size:13px; color:var(--suave); background:none; }
+  .pestanas button.activa { color:var(--texto); border-bottom-color:var(--texto); font-weight:600; }
+  .num { font-size:11px; background:var(--fondo); border-radius:99px; padding:0 6px; margin-left:2px; }
+  .contador { font-size:11px; font-weight:600; color:var(--texto); background:#eef1f3; border-radius:99px; padding:1px 7px; margin-left:6px; white-space:nowrap; }
+  .otros { font-size:12px; color:var(--suave); margin:2px 0 4px; }
+  .otros summary { cursor:pointer; }
+  .otros li { margin:2px 0; }
+  .estado-rev { font-size:12px; margin-top:6px; }
+  .estado-rev.confirmada { color:var(--baja); } .estado-rev.corregida { color:#1a73e8; }
+  .enviado { font-size:12px; color:var(--suave); margin-top:4px; }
+  .acciones button.ok { border-color:var(--baja); color:var(--baja); }
+  .acciones button:disabled { opacity:.45; cursor:not-allowed; }
+  .corrector { margin-top:8px; padding:8px; background:var(--fondo); border-radius:8px; font-size:12px; display:grid; gap:6px; }
+  .corrector label { display:grid; gap:2px; }
+  .corrector select, .corrector input { font:inherit; padding:4px 6px; border:1px solid #cfd5da; border-radius:6px; background:#fff; }
+  .corrector .botones { display:flex; gap:6px; }
+  .notif { border:1px solid #e3e6e8; border-left:4px solid var(--suave); border-radius:8px; padding:8px 10px; margin-bottom:8px; background:#fff; font-size:12px; }
+  .notif .para { font-weight:600; font-size:13px; }
+  .notif .asunto { margin:4px 0; font-weight:500; }
+  .notif pre { white-space:pre-wrap; font:inherit; margin:6px 0 0; color:var(--texto); }
+  .notif .motivo { color:var(--suave); }
+  .notif.anula { opacity:.7; border-left-style:dashed; }
+  .toast { position:fixed; z-index:2000; right:16px; bottom:16px; max-width:340px; background:#1d2329; color:#fff; border-radius:10px;
+           padding:10px 14px; font-size:13px; box-shadow:0 4px 14px rgba(0,0,0,.3); opacity:0; transform:translateY(10px); transition:.25s; pointer-events:none; }
+  .toast.ver { opacity:1; transform:none; }
+  .meteo { font-size:12px; margin:2px 0 6px; }
+  .meteo .av { display:inline-block; border-radius:4px; padding:0 5px; margin:1px 0; color:#1d2329; }
+  .marca-inc { border-radius:50%; border:2px solid #fff; color:#fff; font-weight:700; font-size:12px; display:flex; align-items:center;
+               justify-content:center; box-shadow:0 1px 4px rgba(0,0,0,.4); }
   @media (max-width: 900px) { .app { grid-template-columns:1fr; height:auto; } #mapa { height:55vh; } }
 </style>
 </head>
@@ -53,13 +93,28 @@
     <div id="resultado"></div>
   </aside>
 
-  <main><div id="mapa"></div></main>
+  <main>
+    <div id="mapa"></div>
+    <div class="capas">
+      <label><input type="checkbox" id="verDGT" checked> <span><b>Incidencias oficiales</b> (DGT, tiempo real)</span></label>
+      <div class="leyenda" id="leyendaDGT"></div>
+      <div class="nota" id="estadoDGT">Cargando…</div>
+      <div class="meteo" id="meteo">Avisos AEMET: cargando…</div>
+      <label><input type="checkbox" id="verZonas"> <span>Laderas con argayos activos y zonas que se inundan</span></label>
+      <label><input type="checkbox" id="verTramos"> <span>Tramos de riesgo (accidentes 2019-2024, geología, fauna)</span></label>
+    </div>
+  </main>
 
   <aside>
     <h1>Panel del operador</h1>
-    <p class="sub">Avisos ordenados por severidad</p>
+    <div class="pestanas">
+      <button id="tabCola" class="activa" type="button">Incidencias <span class="num" id="numCola">0</span></button>
+      <button id="tabEnviados" type="button">Avisos a organismos <span class="num" id="numEnviados">0</span></button>
+    </div>
     <div id="cola"></div>
+    <div id="enviados" hidden></div>
   </aside>
+  <div class="toast" id="toast"></div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -104,7 +159,9 @@ document.getElementById("btnEnviar").onclick = async () => {
       body: JSON.stringify({ texto, lat: punto.lat, lon: punto.lon })
     });
     const d = await r.json();
-    res.innerHTML = `Aviso <b>${d.id_aviso}</b> recibido.<br>Derivado a <b>${dest(d.destinatario)}</b> · ${d.latencia_ms} ms`;
+    res.innerHTML = `Aviso <b>${d.id_aviso}</b> recibido.<br>Derivado a <b>${dest(d.destinatario)}</b> · ${d.latencia_ms} ms`
+      + (d.n_avisos_incidencia > 1 ? `<br>Se ha unido a la incidencia ${d.id_incidencia}: ya son ${d.n_avisos_incidencia} avisos.` : "")
+      + (d.notificados && d.notificados.length ? `<br>📨 Avisado al momento: ${d.notificados.map(esc).join(", ")}` : "");
     document.getElementById("texto").value = "";
     cargar();
   } catch (e) {
@@ -116,6 +173,108 @@ const pct = x => `${Math.round(x * 100)} %`;
 const dest = d => d === "revision_humana" ? "Pendiente de revisión" : d;
 
 const NIVELES = ["Baja", "Media", "Alta", "Crítica"];
+const RIESGO = { alta: "alto", critica: "crítico", media: "medio", baja: "bajo" };
+const esc = t => String(t).replace(/</g, "&lt;");
+
+function contexto(c) {
+  if (!c) return "";
+  const lugar = c.en_red
+    ? `<b>${c.carretera}</b>, km ${String(c.km).replace(".", ",")} · ${c.concejo}`
+      + (c.nivel_riesgo_tramo ? ` · tramo de riesgo ${RIESGO[c.nivel_riesgo_tramo]}` : "")
+    : `${c.concejo} · fuera de la red de carreteras`;
+  const motivos = (c.motivos || []).filter(m => !m.startsWith("fuera de la red"));
+  const dgt = (c.incidencias_oficiales_cerca || [])
+    .map(i => `${(TIPOS_DGT[i.categoria] || TIPOS_DGT.otro).ico} ${esc(i.nombre)} a ${i.distancia_m} m`);
+  const meteo = (c.avisos_meteo || []).map(m => `aviso ${m.nivel} por ${esc(m.fenomeno)}`);
+  return `<div class="ctx">${lugar}${motivos.length ? `<br>Contexto: ${esc(motivos.join("; "))}` : ""}`
+    + `${dgt.length ? `<br>DGT: ${dgt.join(" · ")}` : ""}`
+    + `${meteo.length ? `<br>AEMET: ${meteo.join(" · ")}` : ""}</div>`;
+}
+
+// Incidencias oficiales de la DGT: obras, argayos, cortes, desperfectos...
+const TIPOS_DGT = {
+  argayo:      { ico: "⛰", color: "#8d5524", nombre: "Argayo" },
+  corte:       { ico: "⛔", color: "#d93025", nombre: "Corte" },
+  obras:       { ico: "🚧", color: "#e8710a", nombre: "Obras" },
+  desperfecto: { ico: "🕳", color: "#6b4f3a", nombre: "Desperfecto" },
+  agua:        { ico: "💧", color: "#1a73e8", nombre: "Agua" },
+  nieve:       { ico: "❄", color: "#4fa3d1", nombre: "Nieve/hielo" },
+  obstaculo:   { ico: "⚠", color: "#d9a400", nombre: "Obstáculo" },
+  vehiculo:    { ico: "🔺", color: "#e8710a", nombre: "Vehículo detenido" },
+  accidente:   { ico: "🚗", color: "#d93025", nombre: "Accidente" },
+  retencion:   { ico: "🚦", color: "#5f6b76", nombre: "Retención" },
+  otro:        { ico: "ℹ", color: "#5f6b76", nombre: "Otra" },
+};
+document.getElementById("leyendaDGT").innerHTML = Object.values(TIPOS_DGT)
+  .map(t => `<span>${t.ico} ${t.nombre}</span>`).join("");
+
+const capaDGT = L.layerGroup().addTo(mapa);
+const fechaCorta = iso => iso ? new Date(iso).toLocaleString("es-ES", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
+
+async function cargarDGT() {
+  const estado = document.getElementById("estadoDGT");
+  try {
+    const d = await (await fetch(`${API}/incidencias_oficiales`)).json();
+    capaDGT.clearLayers();
+    d.incidencias.forEach(i => {
+      const t = TIPOS_DGT[i.categoria] || TIPOS_DGT.otro;
+      if (Math.abs(i.lat - i.lat_fin) + Math.abs(i.lon - i.lon_fin) > 0.0005)
+        L.polyline([[i.lat, i.lon], [i.lat_fin, i.lon_fin]], { color: t.color, weight: 5, opacity: 0.7 }).addTo(capaDGT);
+      L.marker([i.lat, i.lon], {
+        icon: L.divIcon({ className: "", html: `<div class="ico" style="border-color:${t.color}">${t.ico}</div>`,
+                          iconSize: [26, 26], iconAnchor: [13, 13] })
+      }).bindPopup(`<b>${t.ico} ${esc(i.nombre)}</b>${i.carretera ? " · " + esc(i.carretera) : ""}`
+        + (i.municipio ? `<br>${esc(i.municipio)}` : "")
+        + (i.comentario ? `<br>${esc(i.comentario)}` : "")
+        + (i.inicio ? `<br>Desde ${fechaCorta(i.inicio)}` : "")
+        + `<br><span style="color:#5f6b76">Fuente: DGT (${esc(d.fuente)})</span>`).addTo(capaDGT);
+    });
+    estado.textContent = d.fuente
+      ? `${d.incidencias.length} activas en Asturias · ${d.fuente}${d.actualizado ? " · " + fechaCorta(d.actualizado) : ""}`
+      : "Sin conexión con la DGT";
+  } catch (e) { estado.textContent = "Servicio no disponible"; }
+}
+document.getElementById("verDGT").onchange = e => e.target.checked ? capaDGT.addTo(mapa) : capaDGT.remove();
+cargarDGT();
+setInterval(cargarDGT, 120000);
+
+// Laderas con argayos activos y zonas con procesos de inundación (cartografía oficial, junto a la carretera)
+const capaZonas = L.layerGroup();
+let zonasCargadas = false;
+document.getElementById("verZonas").onchange = async e => {
+  if (!e.target.checked) return capaZonas.remove();
+  if (!zonasCargadas) {
+    try {
+      const zonas = await (await fetch(`${API}/zonas_activas`)).json();
+      zonas.forEach(z => L.circleMarker([z.lat, z.lon], {
+        radius: 6, weight: 1.5, color: "#fff", fillColor: z.ladera ? "#8d5524" : "#1a73e8", fillOpacity: 0.8
+      }).bindPopup(`<b>${z.id.replace("_km", " · km ")}</b><br>`
+        + [z.ladera ? "Ladera con argayos activos a menos de 200 m" : "", z.inundacion ? "Zona con procesos de inundación" : ""]
+            .filter(Boolean).join("<br>")
+        + `<br><span style="color:#5f6b76">Cartografía de Procesos Activos 1:25.000 (SITPA)</span>`).addTo(capaZonas));
+      zonasCargadas = true;
+    } catch (err) { e.target.checked = false; return; }
+  }
+  capaZonas.addTo(mapa);
+};
+
+// Capa de tramos con riesgo base alto o crítico (datos reales)
+const capaTramos = L.layerGroup();
+let tramosCargados = false;
+document.getElementById("verTramos").onchange = async e => {
+  if (!e.target.checked) return capaTramos.remove();
+  if (!tramosCargados) {
+    try {
+      const tramos = await (await fetch(`${API}/tramos`)).json();
+      tramos.forEach(t => L.circleMarker([t.lat, t.lon], {
+        radius: 4, weight: 0, fillColor: t.nivel === "critica" ? "#d93025" : "#e8710a", fillOpacity: 0.55
+      }).bindPopup(`<b>${t.id.replace("_km", " · km ")}</b><br>Riesgo base ${RIESGO[t.nivel]} · ${t.accidentes} accidentes 2019-2024`
+                   + (t.factores ? `<br>${esc(t.factores)}` : "")).addTo(capaTramos));
+      tramosCargados = true;
+    } catch (err) { e.target.checked = false; return; }
+  }
+  capaTramos.addTo(mapa);
+};
 const FACTORES = { luz: "poca luz", alerta_aemet: "aviso meteorológico", zona_montana: "montaña",
                    historial_zona: "tramo peligroso", intensidad_trafico: "tráfico alto" };
 
@@ -130,36 +289,163 @@ function decision(nombre, si, prob) {
   return `<span class="dec ${si ? "si" : ""}" title="Probabilidad: ${pct(prob)}">${nombre}: ${si ? "Sí" : "No"}</span>`;
 }
 
+const ORGANISMOS = ["Conservación de carreteras", "Emergencias", "Ayuntamiento", "Tráfico", "Medio ambiente"];
+let abierto = null;           // incidencia con el formulario de corrección abierto
+let incidencias = [];
+
+function revisionHtml(a) {
+  const enviados = a.notificados && a.notificados.length ? `<div class="enviado">📨 Avisado a: ${a.notificados.map(esc).join(", ")}</div>` : "";
+  if (a.revision === "confirmada") return `<div class="estado-rev confirmada">✓ Confirmada por el operador</div>${enviados}`;
+  if (a.revision === "corregida") return `<div class="estado-rev corregida">✎ Corregida por el operador`
+    + ` (el modelo dijo ${esc(a.severidad_modelo)} · ${esc(dest(a.destinatario_modelo))})${a.nota ? ": " + esc(a.nota) : ""}</div>${enviados}`;
+  return enviados;
+}
+
+function corrector(a) {
+  const opc = (lista, sel) => lista.map(o => `<option ${o === sel ? "selected" : ""}>${o}</option>`).join("");
+  return `<div class="corrector">
+    <label>Severidad <select id="corrSev">${opc(NIVELES, a.severidad)}</select></label>
+    <label>Organismo <select id="corrOrg">${opc(ORGANISMOS, a.organismo)}</select></label>
+    <label>Nota (opcional) <input id="corrNota" placeholder="Ej.: ocupa los dos carriles"></label>
+    <div class="botones"><button type="button" onclick="enviarRevision('${a.id_incidencia}', 'corregir')">Guardar corrección</button>
+      <button type="button" onclick="abrirCorrector(null)">Cancelar</button></div>
+  </div>`;
+}
+
 function tarjeta(a) {
   const detalle = NIVELES.map(n => `${n} ${pct(a.severidad_probabilidades[n] || 0)}`).join(" · ");
   const factores = a.factores.map(f => FACTORES[f] || f);
-  return `<div class="tarjeta">
-    <div class="cab"><span>${dest(a.destinatario)}</span><span class="chip ${a.severidad}" title="${detalle}">${a.severidad}</span></div>
+  const otros = a.n_avisos > 1
+    ? `<details class="otros"><summary>Ver los ${a.n_avisos} avisos</summary><ul>${a.textos.map(t => `<li>${esc(t)}</li>`).join("")}</ul></details>` : "";
+  const revisada = a.revision !== "pendiente";
+  const sinDestino = a.destinatario === "revision_humana";
+  return `<div class="tarjeta" id="t-${a.id_incidencia}">
+    <div class="cab"><span>${esc(dest(a.destinatario))}${a.n_avisos > 1 ? `<span class="contador">${a.n_avisos} avisos</span>` : ""}</span>
+      <span class="chip ${a.severidad}" title="${detalle}">${a.severidad}</span></div>
     ${medidor(a.severidad)}
-    <div class="txt">${a.texto.replace(/</g, "&lt;")}</div>
+    <div class="txt">${esc(a.texto)}</div>
+    ${otros}
+    ${contexto(a.contexto)}
     <div class="decisiones">
       ${decision("Riesgo vial", a.riesgo_vial_escalado, a.riesgo_vial)}
       ${decision("Urgente", a.urgente_escalado, a.urgente)}
       ${decision("Inspección", a.inspeccion >= 0.5, a.inspeccion)}
     </div>
-    <div class="meta">${factores.length ? "Agravantes: " + factores.join(", ") : "Sin agravantes"} · ${a.fecha_hora.replace("T", " ")}</div>
-    ${a.revision_humana ? '<div class="meta revision">Revisión humana</div>' : ""}
-    <div class="acciones"><button>Confirmar</button><button>Corregir</button></div>
+    <div class="meta">${factores.length ? "Agravantes: " + factores.join(", ") : "Sin agravantes"} · ${a.ultimo_aviso.replace("T", " ")} · ${a.id_incidencia}</div>
+    ${a.revision_humana ? '<div class="meta revision">Revisión humana: el modelo no está seguro del organismo</div>' : ""}
+    ${revisionHtml(a)}
+    <div class="acciones">
+      ${a.revision === "confirmada" ? "" : `<button type="button" class="ok" onclick="enviarRevision('${a.id_incidencia}', 'confirmar')"${sinDestino ? ' disabled title="Corrige primero el organismo"' : ""}>Confirmar</button>`}
+      <button type="button" onclick="abrirCorrector('${a.id_incidencia}')">${revisada ? "Volver a corregir" : "Corregir"}</button>
+    </div>
+    ${abierto === a.id_incidencia ? corrector(a) : ""}
   </div>`;
+}
+
+function abrirCorrector(id) {
+  abierto = id;
+  pintarCola();
+}
+
+async function enviarRevision(id, accion) {
+  const cuerpo = { accion };
+  if (accion === "corregir") {
+    cuerpo.severidad = document.getElementById("corrSev").value;
+    cuerpo.organismo = document.getElementById("corrOrg").value;
+    cuerpo.nota = document.getElementById("corrNota").value.trim() || null;
+  }
+  try {
+    const r = await fetch(`${API}/incidencias/${id}/revision`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cuerpo)
+    });
+    if (!r.ok) throw new Error(await r.text());
+    abierto = null;
+    await cargar();
+    await cargarNotificaciones();
+  } catch (e) { aviso("No se pudo guardar la revisión."); }
+}
+
+function pintarCola() {
+  document.getElementById("cola").innerHTML = incidencias.map(tarjeta).join("") || '<p class="sub">Sin avisos todavía</p>';
+  document.getElementById("numCola").textContent = incidencias.length;
+}
+
+function marcaIncidencia(a) {
+  const tam = 20 + Math.min(a.n_avisos - 1, 4) * 4;
+  return L.marker([a.lat, a.lon], {
+    icon: L.divIcon({ className: "", iconSize: [tam, tam], iconAnchor: [tam / 2, tam / 2],
+      html: `<div class="marca-inc" style="width:${tam}px;height:${tam}px;background:${COLOR[a.severidad]}">${a.n_avisos > 1 ? a.n_avisos : ""}</div>` })
+  }).bindPopup(`<b>${a.severidad}</b> · ${esc(dest(a.destinatario))}`
+    + (a.n_avisos > 1 ? ` · ${a.n_avisos} avisos` : "")
+    + `<br>${a.textos.map(esc).join("<br>")}`
+    + (a.revision !== "pendiente" ? `<br><i>${a.revision === "confirmada" ? "Confirmada" : "Corregida"} por el operador</i>` : ""));
 }
 
 async function cargar() {
   try {
-    const avisos = await (await fetch(`${API}/avisos`)).json();
-    document.getElementById("cola").innerHTML = avisos.map(tarjeta).join("") || '<p class="sub">Sin avisos todavía</p>';
+    incidencias = await (await fetch(`${API}/avisos`)).json();
+    if (!abierto) pintarCola();   // no se repinta mientras el operador está corrigiendo
     capaAvisos.clearLayers();
-    avisos.forEach(a => L.circleMarker([a.lat, a.lon], {
-      radius: 9, color: "#fff", weight: 2, fillColor: COLOR[a.severidad], fillOpacity: 0.95
-    }).bindPopup(`<b>${a.severidad}</b> · ${dest(a.destinatario)}<br>${a.texto.replace(/</g, "&lt;")}`).addTo(capaAvisos));
+    incidencias.forEach(a => marcaIncidencia(a).addTo(capaAvisos));
   } catch (e) { /* el servicio aún no está arrancado */ }
 }
+
+// ---------- Avisos enviados a los organismos (simulados)
+let vistos = null;
+function aviso(texto) {
+  const t = document.getElementById("toast");
+  t.innerHTML = texto; t.classList.add("ver");
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("ver"), 5000);
+}
+
+async function cargarNotificaciones() {
+  try {
+    const lista = await (await fetch(`${API}/notificaciones`)).json();
+    document.getElementById("numEnviados").textContent = lista.length;
+    document.getElementById("enviados").innerHTML = lista.map(n => `
+      <div class="notif ${n.motivo.startsWith("Anulación") ? "anula" : ""}" style="border-left-color:${COLOR[n.severidad]}">
+        <div class="para">Para: ${esc(n.destinatario_visible)}</div>
+        <div class="motivo">${fechaCorta(n.hora)} · ${esc(n.motivo)} · ${n.id}</div>
+        <div class="asunto">${esc(n.asunto)}</div>
+        <pre>${esc(n.cuerpo)}</pre>
+      </div>`).join("") || '<p class="sub">Todavía no se ha avisado a ningún organismo. Las Críticas se avisan al momento; el resto, cuando el operador confirma.</p>';
+    if (vistos !== null) {
+      lista.filter(n => !vistos.has(n.id)).reverse()
+        .forEach(n => aviso(`📨 ${n.motivo.startsWith("Anulación") ? "Anulado el aviso a" : "Aviso enviado a"} <b>${esc(n.destinatario_visible)}</b><br>${esc(n.asunto)}`));
+    }
+    vistos = new Set(lista.map(n => n.id));
+  } catch (e) { /* servicio no disponible */ }
+}
+
+function pestana(cual) {
+  document.getElementById("cola").hidden = cual !== "cola";
+  document.getElementById("enviados").hidden = cual !== "enviados";
+  document.getElementById("tabCola").classList.toggle("activa", cual === "cola");
+  document.getElementById("tabEnviados").classList.toggle("activa", cual === "enviados");
+}
+document.getElementById("tabCola").onclick = () => pestana("cola");
+document.getElementById("tabEnviados").onclick = () => pestana("enviados");
+
+// ---------- Avisos meteorológicos oficiales (AEMET vía MeteoAlarm)
+const COLOR_AEMET = { amarilla: "#ffe066", naranja: "#ffa94d", roja: "#ff6b6b" };
+async function cargarMeteo() {
+  const caja = document.getElementById("meteo");
+  try {
+    const d = await (await fetch(`${API}/avisos_meteo`)).json();
+    if (!d.fuente) { caja.textContent = "Avisos AEMET: sin conexión"; return; }
+    caja.innerHTML = d.avisos.length
+      ? `<b>Avisos AEMET</b><br>` + d.avisos.map(a => `<span class="av" style="background:${COLOR_AEMET[a.nivel] || "#eee"}">`
+          + `${esc(a.nivel)} · ${esc(a.fenomeno)}</span> ${esc(a.area)}${a.hasta ? " · hasta " + fechaCorta(a.hasta) : ""}`).join("<br>")
+      : `Avisos AEMET: ninguno activo en Asturias <span style="color:#5f6b76">(${esc(d.fuente)})</span>`;
+  } catch (e) { caja.textContent = "Avisos AEMET: servicio no disponible"; }
+}
+
 cargar();
+cargarNotificaciones();
+cargarMeteo();
 setInterval(cargar, 5000);
+setInterval(cargarNotificaciones, 5000);
+setInterval(cargarMeteo, 600000);
 </script>
 </body>
 </html>
