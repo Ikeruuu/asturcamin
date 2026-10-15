@@ -1,0 +1,112 @@
+{
+  "proyecto": "AsturCamín",
+  "version": "1.0",
+  "descripcion": "Contrato de decisiones del triaje. Datos lo usa para etiquetar, Modelo para preguntar al modelo de decisión y Frontend para pintar las salidas. Cualquier cambio se acuerda entre todos y sube la versión.",
+
+  "estado": {
+    "descripcion": "Lo que recibe el modelo por cada aviso: el texto del ciudadano más el contexto calculado. Si una fuente falla, el campo vale 'desconocido' o null, nunca se omite.",
+    "campos": {
+      "texto": { "tipo": "string", "descripcion": "Aviso tal y como lo escribe el ciudadano" },
+      "lat": { "tipo": "number" },
+      "lon": { "tipo": "number" },
+      "fecha_hora": { "tipo": "string", "formato": "ISO 8601, hora local de Madrid" },
+      "via": { "tipo": "string|null", "ejemplo": "AS-114" },
+      "titular": { "tipo": "enum", "valores": ["Principado", "Estado", "Ayuntamiento", "desconocido"] },
+      "tipo_via": { "tipo": "enum", "valores": ["autovia", "nacional", "regional", "comarcal", "local", "urbana", "desconocido"] },
+      "luz": { "tipo": "enum", "valores": ["dia", "crepusculo", "noche"] },
+      "estacion": { "tipo": "enum", "valores": ["primavera", "verano", "otono", "invierno"] },
+      "lluvia_24h_mm": { "tipo": "number|null" },
+      "alerta_aemet": { "tipo": "enum", "valores": ["ninguna", "amarilla", "naranja", "roja", "desconocido"] },
+      "temperatura_c": { "tipo": "number|null" },
+      "zona_montana": { "tipo": "boolean|null" },
+      "riesgo_fauna": { "tipo": "enum", "valores": ["bajo", "medio", "alto", "desconocido"] },
+      "historial_zona": { "tipo": "enum", "valores": ["sin_historial", "algun_accidente", "tramo_peligroso", "desconocido"] },
+      "incidencia_oficial_cerca": { "tipo": "boolean|null", "descripcion": "Hay una incidencia de la DGT activa a menos de 1 km" },
+      "via_cortada": { "tipo": "boolean|null" },
+      "cadenas": { "tipo": "boolean|null" },
+      "intensidad_trafico": { "tipo": "enum", "valores": ["baja", "media", "alta", "desconocido"] },
+      "avisos_similares_cerca": { "tipo": "integer", "descripcion": "Avisos parecidos en los últimos 120 min a menos de 300 m" }
+    }
+  },
+
+  "preguntas": {
+    "organismo": {
+      "tipo": "choice",
+      "instrucciones": "¿Qué organismo debe gestionar este aviso? Elige quién tiene que actuar para resolver el problema, no quién lo ha visto.",
+      "opciones": {
+        "Conservación de carreteras": "Daños o problemas en la propia carretera fuera de casco urbano: baches, socavones, desprendimientos y rocas, árboles caídos, señales o barreras dañadas, balsas de agua, nieve o hielo, animales muertos en la calzada.",
+        "Emergencias": "Hay personas heridas o en peligro, incendio, vehículo atrapado o despeñado, vertido de mercancías peligrosas, o la situación exige rescate o asistencia sanitaria.",
+        "Ayuntamiento": "Problemas en calles y vías urbanas o en elementos municipales: semáforos, alumbrado, aceras, alcantarillas, señalización urbana.",
+        "Tráfico": "Problemas de circulación y seguridad que requieren regular o vigilar el tráfico: vehículo averiado o accidente sin heridos en la calzada, retenciones, ganado suelto, conductor en sentido contrario, objeto caído de un vehículo.",
+        "Medio ambiente": "Afección al entorno natural: vertidos no peligrosos, fauna salvaje herida, contaminación de ríos o cunetas, residuos abandonados junto a la vía."
+      }
+    },
+
+    "severidad": {
+      "tipo": "score",
+      "instrucciones": "¿Qué severidad tiene la incidencia? Ten en cuenta el contexto: noche, lluvia, alerta meteorológica, curva o tramo peligroso agravan la situación.",
+      "niveles": [
+        { "nombre": "Baja", "criterio": "No afecta a la circulación y se puede planificar. Ejemplos: bache pequeño en el arcén, señal sucia o descolorida." },
+        { "nombre": "Media", "criterio": "Afecta parcialmente a la circulación sin peligro inmediato. Ejemplos: señal caída fuera de la calzada, semáforo apagado en una calle tranquila." },
+        { "nombre": "Alta", "criterio": "Peligro real pero acotado. Ejemplos: balsa de agua en una carretera secundaria, semáforo apagado en un cruce con tráfico." },
+        { "nombre": "Crítica", "criterio": "Obstáculo en la calzada, vía cortada o peligro agravado por noche, lluvia o curva. Ejemplos: roca ocupando un carril, desprendimiento junto a la vía, personas heridas." }
+      ]
+    },
+
+    "riesgo_vial": {
+      "tipo": "noul",
+      "instrucciones": "Existe un riesgo inmediato para la seguridad de las personas que circulan por la vía."
+    },
+
+    "urgente": {
+      "tipo": "noul",
+      "instrucciones": "La incidencia requiere intervención urgente y no puede esperar a planificarse."
+    },
+
+    "inspeccion": {
+      "tipo": "noul",
+      "instrucciones": "Es necesario que alguien vaya al lugar a inspeccionar la incidencia antes de actuar."
+    }
+  },
+
+  "reglas_fijas": {
+    "descripcion": "Lo que se puede decidir con certeza no se le pregunta al modelo. Se aplican después de su respuesta.",
+    "derivacion_conservacion": {
+      "si_organismo": "Conservación de carreteras",
+      "segun_titular": {
+        "Principado": "Conservación de carreteras del Principado",
+        "Estado": "Demarcación de Carreteras del Estado en Asturias",
+        "Ayuntamiento": "Ayuntamiento",
+        "desconocido": "revision_humana"
+      }
+    }
+  },
+
+  "umbrales": {
+    "descripcion": "Valores de partida, a ajustar con el conjunto de prueba. Son asimétricos a propósito: un crítico que se escapa es peor que una falsa alarma.",
+    "riesgo_vial_escala_desde": 0.30,
+    "urgente_escala_desde": 0.40,
+    "severidad_minima_alta_si_alta_mas_critica_desde": 0.40,
+    "confianza_minima_organismo": 0.60,
+    "accion_si_confianza_baja": "revision_humana"
+  },
+
+  "salida": {
+    "descripcion": "Lo que devuelve POST /triaje y lo que pinta el frontend.",
+    "campos": {
+      "id_aviso": "string",
+      "organismo": "una de las opciones de 'organismo'",
+      "destinatario": "organismo final tras aplicar reglas_fijas",
+      "organismo_probabilidades": "objeto opción -> probabilidad",
+      "severidad": "Baja | Media | Alta | Crítica (tras umbrales)",
+      "severidad_probabilidades": "objeto nivel -> probabilidad",
+      "riesgo_vial": "probabilidad 0-1",
+      "urgente": "probabilidad 0-1",
+      "inspeccion": "probabilidad 0-1",
+      "revision_humana": "boolean",
+      "factores": "lista de campos del estado que agravan, para la explicación con plantilla",
+      "id_incidencia": "string, compartido por avisos duplicados",
+      "latencia_ms": "integer"
+    }
+  }
+}
