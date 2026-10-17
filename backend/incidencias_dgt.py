@@ -12,7 +12,9 @@ También alimenta tres campos del contrato:
   cadenas                   -> hay obligación de cadenas a menos de 5 km
 
 Se refresca en segundo plano cada 2 minutos, así que el triaje nunca espera a la DGT.
-Si no hay conexión, usa la instantánea que haya en contexto/07_tiempo_real/dgt_*.xml
+Al arrancar carga al instante la última copia guardada (contexto/07_tiempo_real/dgt_*.xml) y la
+sustituye por la de directo en cuanto se descarga; cada descarga buena actualiza esa copia.
+Si no hay conexión,
 (la que guardó el compañero) y, si tampoco hay, deja esos campos como desconocidos.
 
 El parser no depende de los prefijos de los espacios de nombres: busca por nombre local
@@ -178,7 +180,7 @@ def parsear(xml_bytes):
 class FeedDGT:
     def __init__(self):
         self.incidencias = []
-        self.fuente = None          # "DGT en directo" | "instantánea ..." | None
+        self.fuente = None          # "DGT en directo" | "copia del dd/mm hh:mm" | None
         self.actualizado = None
         self.error = None
         self._hilo = None
@@ -188,20 +190,42 @@ class FeedDGT:
         with urllib.request.urlopen(req, timeout=30) as r:
             return r.read()
 
+    def _copias(self):
+        return sorted(CARPETA_SNAPSHOT.glob("dgt_*.xml"), key=lambda f: f.stat().st_mtime, reverse=True)
+
+    def cargar_copia(self):
+        """Carga al instante la última copia guardada, para que el mapa nunca arranque vacío."""
+        for f in self._copias():
+            try:
+                self.incidencias = parsear(f.read_bytes())
+                self.fuente = "copia del " + datetime.fromtimestamp(f.stat().st_mtime).strftime("%d/%m %H:%M")
+                self.actualizado = datetime.now().isoformat(timespec="seconds")
+                return True
+            except Exception:
+                continue
+        return False
+
+    def _guardar_copia(self, crudo):
+        """Tras cada descarga buena se guarda la copia del día (como mucho cada 30 min)."""
+        try:
+            CARPETA_SNAPSHOT.mkdir(parents=True, exist_ok=True)
+            destino = CARPETA_SNAPSHOT / f"dgt_{datetime.now():%Y-%m-%d}.xml"
+            if not destino.exists() or time.time() - destino.stat().st_mtime > 1800:
+                destino.write_bytes(crudo)
+        except Exception:
+            pass
+
     def refrescar(self):
         try:
-            self.incidencias = parsear(self._descargar())
+            crudo = self._descargar()
+            self.incidencias = parsear(crudo)
             self.fuente, self.error = "DGT en directo", None
+            self._guardar_copia(crudo)
         except Exception as e:
+            # Sin conexión: se mantiene lo último que hubiera (directo anterior o copia guardada)
             self.error = f"{type(e).__name__}: {e}"
-            if self.fuente is None:  # sin datos todavía: probar la instantánea guardada
-                for f in sorted(CARPETA_SNAPSHOT.glob("dgt_*.xml"), reverse=True):
-                    try:
-                        self.incidencias = parsear(f.read_bytes())
-                        self.fuente = f"instantánea {f.stem[-10:]}"
-                        break
-                    except Exception:
-                        continue
+            if self.fuente is None:
+                self.cargar_copia()
         self.actualizado = datetime.now().isoformat(timespec="seconds")
 
     def arrancar(self):
@@ -213,6 +237,7 @@ class FeedDGT:
                       f"({self.fuente or 'sin datos'}{'; ' + self.error if self.error else ''})")
                 time.sleep(REFRESCO_S)
         if self._hilo is None:
+            self.cargar_copia()  # el mapa tiene datos desde el primer segundo
             self._hilo = threading.Thread(target=bucle, daemon=True)
             self._hilo.start()
 

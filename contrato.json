@@ -1,6 +1,6 @@
 {
   "proyecto": "AsturCamín",
-  "version": "1.0",
+  "version": "1.1",
   "descripcion": "Contrato de decisiones del triaje. Datos lo usa para etiquetar, Modelo para preguntar al modelo de decisión y Frontend para pintar las salidas. Cualquier cambio se acuerda entre todos y sube la versión.",
 
   "estado": {
@@ -44,12 +44,12 @@
 
     "severidad": {
       "tipo": "score",
-      "instrucciones": "¿Qué severidad tiene la incidencia? Ten en cuenta el contexto: noche, lluvia, alerta meteorológica, curva o tramo peligroso agravan la situación.",
+      "instrucciones": "¿Qué severidad tiene la incidencia? Ten en cuenta el contexto: una vía rápida, mucho tráfico, un tramo peligroso, lluvia fuerte o un aviso meteorológico agravan la situación.",
       "niveles": [
-        { "nombre": "Baja", "criterio": "No afecta a la circulación y se puede planificar. Ejemplos: bache pequeño en el arcén, señal sucia o descolorida." },
-        { "nombre": "Media", "criterio": "Afecta parcialmente a la circulación sin peligro inmediato. Ejemplos: señal caída fuera de la calzada, semáforo apagado en una calle tranquila." },
-        { "nombre": "Alta", "criterio": "Peligro real pero acotado. Ejemplos: balsa de agua en una carretera secundaria, semáforo apagado en un cruce con tráfico." },
-        { "nombre": "Crítica", "criterio": "Obstáculo en la calzada, vía cortada o peligro agravado por noche, lluvia o curva. Ejemplos: roca ocupando un carril, desprendimiento junto a la vía, personas heridas." }
+        { "nombre": "Baja", "criterio": "No afecta a la circulación y se puede planificar. Ejemplos: bache pequeño o asfalto levantado en el arcén, señal sucia, farolas apagadas." },
+        { "nombre": "Media", "criterio": "Afecta parcialmente a la circulación sin peligro inmediato. Ejemplos: señal caída fuera de la calzada, semáforo apagado en una calle tranquila, aviso poco concreto." },
+        { "nombre": "Alta", "criterio": "Peligro real para quien circula: hay que actuar ya. Ejemplos: roca u objeto ocupando un carril en una carretera secundaria, placas de hielo, coche averiado en el carril, semáforo apagado en un cruce con tráfico." },
+        { "nombre": "Crítica", "criterio": "Personas en peligro ahora mismo, vía cortada, o un obstáculo en una vía rápida o con mucho tráfico. Ejemplos: accidente con heridos, argayo que corta la carretera, árbol atravesado en la calzada, roca en el carril de una autovía." }
       ]
     },
 

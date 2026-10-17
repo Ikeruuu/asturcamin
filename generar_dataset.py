@@ -8,7 +8,7 @@ Crea avisos ciudadanos etiquetados, coherentes con contrato.json:
   - separa train/test por incidencia (los duplicados nunca quedan a ambos lados)
 
 Uso:
-    python generar_dataset.py --n 850 --semilla 42 --contrato contrato.json --salida datos/
+    python generar_dataset.py --n 2000 --semilla 42 --contrato contrato.json --salida datos/
 
 Solo usa la biblioteca estándar de Python.
 """
@@ -71,7 +71,8 @@ ESTACION_MESES = {"invierno": [12, 1, 2], "primavera": [3, 4, 5], "verano": [6, 
 # Catálogo de incidencias
 #   org_i / org_u : organismo en vía interurbana / urbana (None = no ocurre ahí)
 #   base          : severidad base (0 Baja … 3 Crítica)
-#   agr           : agravantes que suben un nivel (noche, lluvia, alerta, montana, trafico)
+#   agr           : agravantes que suben un nivel (noche, lluvia, alerta, montana, trafico,
+#                   rapida = autovía o nacional)
 #   calzada       : afecta a la calzada (cuenta para riesgo vial)
 #   insp          : necesita inspección presencial
 #   urg           : siempre urgente
@@ -91,13 +92,17 @@ def inc(tipo, org_i, org_u, base, agr, calzada, insp, textos, urg=False, forzar=
                   riesgo=calzada if riesgo is None else riesgo, planif=planif))
 
 
-inc("roca_carril", CONS, None, 3, ["noche", "lluvia", "montana"], True, True, [
+# Revisión v2 (criterio de severidad): Crítica = personas en peligro ahora mismo o vía cortada.
+# Un obstáculo en el carril es Alta y solo pasa a Crítica en vía rápida, con tráfico alto o en
+# tramo peligroso. La noche solo agrava cuando la oscuridad es el problema (bache grande, ganado
+# suelto, aviso vago). La montaña ya no agrava hielo ni argayos: en Asturias es lo normal.
+inc("roca_carril", CONS, None, 2, ["rapida", "trafico", "lluvia"], True, True, [
     "Hay una roca ocupando parcialmente un carril en la {via}{ref}{ctx}",
     "piedra grande en mitad del carril en la {via}{ref}{ctx}",
     "Ojo que ha caído una roca a la carretera{ref}, ocupa medio carril{ctx}",
     "Rocas en la calzada de la {via}{ref}, hay que esquivarlas invadiendo el otro carril{ctx}",
     "acaba de caer un pedrusco a la {via}{ref}{ctx}"])
-inc("argayo_proximo", CONS, None, 2, ["lluvia", "alerta", "montana"], False, True, [
+inc("argayo_proximo", CONS, None, 2, ["lluvia", "alerta"], False, True, [
     "Hay un desprendimiento próximo a la {via}{ref}{ctx}",
     "se está viniendo abajo el talud al lado de la carretera{ref}{ctx}",
     "argayo en la ladera junto a la {via}{ref}, de momento no llega a la calzada{ctx}",
@@ -110,16 +115,16 @@ inc("arbol_calzada", CONS, AYTO, 3, ["noche", "trafico"], True, True, [
     "Árbol caído atravesado en la {via}{ref}{ctx}",
     "se ha caído un árbol y ocupa toda la calzada{ref}{ctx}",
     "hay un árbol tirado en medio de la carretera{ref} tras el temporal{ctx}"], forzar={"alerta_min": "amarilla"})
-inc("ramas_arcen", CONS, AYTO, 0, ["noche", "alerta"], False, False, [
+inc("ramas_arcen", CONS, AYTO, 0, ["alerta"], False, False, [
     "Ramas en el arcén de la {via}{ref}{ctx}",
     "hay unas ramas caídas en la cuneta{ref}, no molestan mucho{ctx}",
     "restos de poda en el borde de la carretera{ref}{ctx}"])
-# Revisión v1: "bachecillo / bache pequeño" siempre Baja; "asfalto levantado" es Media en
-# carretera y Baja en ciudad (Media solo con mucho tráfico)
+# Revisión v1: "bachecillo / bache pequeño" siempre Baja.
+# Revisión v2: "asfalto levantado en el arcén" es Baja también en carretera (en ciudad, Media con mucho tráfico)
 inc("bache_pequeno", CONS, AYTO, 0, [], False, False, [
     "Bache pequeño en el arcén de la {via}{ref}{ctx}",
     "hay un bachecillo en el borde{ref}, nada grave{ctx}"])
-inc("asfalto_levantado_i", CONS, None, 1, [], False, False, [
+inc("asfalto_levantado_i", CONS, None, 0, [], False, False, [
     "El asfalto está algo levantado en el arcén{ref}{ctx}"])
 inc("asfalto_levantado_u", None, AYTO, 0, ["trafico"], False, False, [
     "El asfalto está algo levantado en el arcén{ref}{ctx}"])
@@ -127,11 +132,11 @@ inc("bache_grande", CONS, AYTO, 1, ["noche", "lluvia", "trafico"], True, True, [
     "Bache enorme en el carril de la {via}{ref}{ctx}",
     "hay un agujero grande en la calzada{ref}, casi reviento una rueda{ctx}",
     "Bache muy profundo en mitad del carril{ref}{ctx}"], planif=True)
-inc("socavon", CONS, AYTO, 2, ["lluvia", "trafico", "noche"], True, True, [
+inc("socavon", CONS, AYTO, 2, ["lluvia", "trafico"], True, True, [
     "Se ha abierto un socavón en la {via}{ref}{ctx}",
     "la calzada se está hundiendo{ref}, hay un socavón en el carril derecho{ctx}",
     "Socavón junto al borde del carril{ref}, el asfalto está cediendo{ctx}"])
-inc("balsa_agua", CONS, AYTO, 2, ["noche", "alerta", "trafico"], True, False, [
+inc("balsa_agua", CONS, AYTO, 2, ["alerta", "rapida"], True, False, [
     "Se ha detectado una balsa de agua peligrosa en la {via}{ref}{ctx}",
     "hay una balsa de agua enorme que ocupa el carril{ref}{ctx}",
     "Charca grande en la calzada{ref}, los coches pierden el control al pasar{ctx}",
@@ -140,7 +145,7 @@ inc("senal_caida_fuera", CONS, AYTO, 1, [], False, False, [
     "Existe una señal de tráfico caída tras un temporal{ref}{ctx}",
     "hay una señal tirada en la cuneta de la {via}{ref}{ctx}",
     "Señal de stop caída fuera de la calzada{ref}{ctx}"])
-inc("senal_caida_calzada", CONS, AYTO, 2, ["noche", "trafico"], True, False, [
+inc("senal_caida_calzada", CONS, AYTO, 2, ["rapida", "trafico"], True, False, [
     "Una señal se ha caído y está en medio del carril{ref}{ctx}",
     "el viento ha tirado una señal a la calzada de la {via}{ref}{ctx}",
     "Panel informativo caído sobre la carretera{ref}{ctx}"])
@@ -148,11 +153,11 @@ inc("senal_sucia", CONS, AYTO, 0, [], False, False, [
     "La señal de la curva está muy sucia y casi no se lee{ref}{ctx}",
     "señal descolorida en la {via}{ref}{ctx}",
     "hay una señal tapada por la vegetación{ref}{ctx}"])
-inc("semaforo_apagado", None, AYTO, 1, ["trafico", "noche"], True, False, [
+inc("semaforo_apagado", None, AYTO, 1, ["trafico"], True, False, [
     "Un semáforo lleva apagado varias horas en la {via}{ref}{ctx}",
     "semáforo apagado en el cruce de la {via}{ref}{ctx}",
     "No funciona el semáforo{ref}, los coches pasan como pueden{ctx}"])
-inc("farola_apagada", None, AYTO, 0, ["noche"], False, False, [
+inc("farola_apagada", None, AYTO, 0, [], False, False, [
     "Varias farolas apagadas en la {via}{ref}{ctx}",
     "la calle está a oscuras, no funciona el alumbrado{ref}{ctx}",
     "farola fundida en la {via}{ref}{ctx}"])
@@ -170,11 +175,11 @@ inc("barrera_danada", CONS, None, 2, [], False, True, [
     "Quitamiedos roto en la {via}{ref}{ctx}",
     "la bionda de la curva está arrancada{ref}{ctx}",
     "barrera de seguridad doblada tras un golpe{ref}{ctx}"], riesgo=True, planif=True)
-inc("hielo", CONS, None, 2, ["noche", "montana"], True, False, [
+inc("hielo", CONS, None, 2, ["rapida", "trafico"], True, False, [
     "Placas de hielo en la {via}{ref}{ctx}",
     "la carretera está helada{ref}, patinan los coches{ctx}",
     "Hielo en la calzada en la zona de sombra{ref}{ctx}"], forzar={"estacion": "invierno", "temp_max": 1})
-inc("nieve_puerto", CONS, None, 2, ["alerta", "noche"], True, False, [
+inc("nieve_puerto", CONS, None, 2, ["alerta"], True, False, [
     "Está nevando fuerte y la {via} empieza a cubrirse{ref}{ctx}",
     "nieve en la calzada{ref}, sin cadenas no se sube{ctx}",
     "La quitanieves no ha pasado y hay nieve acumulada{ref}{ctx}"],
@@ -193,11 +198,11 @@ inc("fauna_herida", MAMB, None, 1, [], False, False, [
     "Hay un corzo herido en la cuneta de la {via}{ref}{ctx}",
     "un zorro atropellado pero vivo en el arcén{ref}{ctx}",
     "ave rapaz herida al borde de la carretera{ref}{ctx}"])
-inc("averiado_calzada", TRAF, TRAF, 2, ["noche", "trafico", "lluvia"], True, False, [
+inc("averiado_calzada", TRAF, TRAF, 2, ["rapida", "trafico"], True, False, [
     "Coche averiado parado en el carril de la {via}{ref}{ctx}",
     "hay un camión averiado ocupando un carril{ref}{ctx}",
     "furgoneta parada en la calzada sin triángulos{ref}{ctx}"])
-inc("accidente_sin_heridos", TRAF, TRAF, 2, ["noche", "trafico"], True, False, [
+inc("accidente_sin_heridos", TRAF, TRAF, 2, ["rapida", "trafico"], True, False, [
     "Choque entre dos coches en la {via}{ref}, parece que no hay heridos{ctx}",
     "alcance sin heridos{ref}, los coches están en el carril{ctx}",
     "un coche se ha salido un poco de la carretera{ref}, la conductora está bien{ctx}"])
@@ -235,7 +240,7 @@ inc("residuos", MAMB, None, 0, [], False, False, [
 inc("vertido_rio", MAMB, None, 1, [], False, True, [
     "El río junto a la {via} baja con espuma y color raro{ref}{ctx}",
     "vertido al regato al lado de la carretera{ref}{ctx}"])
-inc("aviso_vago", CONS, None, 2, ["noche", "lluvia"], True, True, [
+inc("aviso_vago", CONS, None, 1, ["noche", "lluvia"], True, True, [
     "Hay algo raro en la curva de la {via}{ref}, casi me la pego{ctx}",
     "cuidado{ref}, algo en la carretera{ctx}",
     "no sé qué es pero hay algo en el carril{ref}{ctx}"], dif="dificil")
@@ -408,6 +413,8 @@ def agravantes_activos(inc_def, estado):
             activos.append("montana")
         elif a == "trafico" and estado["intensidad_trafico"] == "alta":
             activos.append("trafico")
+        elif a == "rapida" and estado["tipo_via"] in ("autovia", "nacional"):
+            activos.append("rapida")
     # El tramo peligroso solo agrava tipos que admiten agravantes (los de nivel fijo no se mueven)
     if estado["historial_zona"] == "tramo_peligroso" and inc_def["calzada"] and inc_def["agr"]:
         activos.append("tramo_peligroso")
@@ -509,7 +516,7 @@ def semillas():
     casos = [
         ("Hay una roca ocupando parcialmente un carril en la AS-114.", 43.335, -4.80, "2026-10-15T09:30", "AS-114",
          "Principado", "dia", {"zona_montana": True},
-         (CONS, "Crítica", True, True, True)),
+         (CONS, "Alta", True, True, True)),  # v2: obstáculo en vía secundaria, de día y tráfico normal
         ("Un semáforo lleva apagado varias horas en una zona urbana.", 43.3614, -5.8494, "2026-10-15T11:00",
          "calle Uría", "Ayuntamiento", "dia", {"zona_montana": False, "tipo_via": "urbana", "riesgo_fauna": "bajo",
                                                "intensidad_trafico": "alta"},
@@ -575,7 +582,7 @@ def validar(filas, contrato):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--n", type=int, default=850, help="incidencias base (los duplicados y pares se suman)")
+    ap.add_argument("--n", type=int, default=2000, help="incidencias base (los duplicados y pares se suman)")
     ap.add_argument("--semilla", type=int, default=42)
     ap.add_argument("--contrato", default="contrato.json")
     ap.add_argument("--salida", default="datos")
@@ -589,7 +596,7 @@ def main():
 
     # Peso de cada tipo para que las severidades finales queden equilibradas
     # (los agravantes suben un nivel, así que se generan más casos de base baja)
-    objetivo_base = {0: 0.27, 1: 0.30, 2: 0.28, 3: 0.15}
+    objetivo_base = {0: 0.30, 1: 0.32, 2: 0.28, 3: 0.10}
     n_por_base = Counter(t["base"] for t in I)
     pesos = [objetivo_base[t["base"]] / n_por_base[t["base"]] for t in I]
 

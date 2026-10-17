@@ -1,0 +1,340 @@
+[
+  {
+    "aviso": {
+      "texto": "Hay una roca ocupando parcialmente un carril en la AS-114.",
+      "categoria_supuesta": "desprendimiento",
+      "lat": 43.313074,
+      "lon": -4.840031,
+      "fecha_hora": "2026-10-15T21:30",
+      "es_sintetico": true
+    },
+    "contexto": {
+      "es_aviso_sintetico": true,
+      "origen_contexto": "real",
+      "ubicacion": {
+        "en_red_catalogada": true,
+        "distancia_tramo_m": 0,
+        "id_tramo": "AS-114_km029",
+        "carretera": "AS-114",
+        "km": 29,
+        "concejo": "CABRALES",
+        "titularidad": "Principado de Asturias",
+        "organismo_conservacion": "Servicio de Conservación de Carreteras del Principado",
+        "categoria_via": "regional"
+      },
+      "momento": {
+        "fecha_hora": "2026-10-15T21:30",
+        "franja_luz": "noche",
+        "mes": 10,
+        "estacion": "otono",
+        "factor_fauna_mes": 1.35,
+        "factor_fauna_hora": 2.86
+      },
+      "tramo": {
+        "altitud_m": 169.0,
+        "pendiente_via_pct": 2.03,
+        "sinuosidad": 1.1111941460175838,
+        "susc_desprendimientos": 4,
+        "susc_argayos": 3,
+        "susc_aludes": 0,
+        "proceso_activo_ladera": 0,
+        "proceso_activo_inundacion": 0,
+        "terreno_cinegetico": 1,
+        "n_accidentes": 2,
+        "indice_peligrosidad": 1.87,
+        "indice_fauna": 0.63,
+        "rr_noche": 0.83,
+        "rr_lluvia": 0.83,
+        "rr_hielo_nieve": 0.83,
+        "nivel_riesgo_base": "alta",
+        "score_riesgo_base": 0.71,
+        "factores_riesgo": "susceptibilidad a desprendimientos muy alta; susceptibilidad a argayos alta"
+      },
+      "clima_concejo": {
+        "precip_media_anual_mm": 1935.0,
+        "pct_dias_lluvia_fuerte": 6.2,
+        "pct_dias_helada": 0.7,
+        "pct_dias_nieve": 0.1
+      },
+      "meteo_del_dia": null,
+      "prior": {
+        "multiplicador_veracidad": 1.3,
+        "ajuste_severidad": 1,
+        "motivos": [
+          "tramo con susceptibilidad alta a desprendimientos/argayos",
+          "de noche"
+        ],
+        "nota": "heurística inicial basada en datos reales; el modelo se entrena con avisos sintéticos"
+      }
+    }
+  },
+  {
+    "aviso": {
+      "texto": "Un semáforo lleva apagado varias horas en una zona urbana.",
+      "categoria_supuesta": "infraestructura",
+      "lat": 43.3614,
+      "lon": -5.8494,
+      "fecha_hora": "2026-10-15T18:00",
+      "es_sintetico": true
+    },
+    "contexto": {
+      "es_aviso_sintetico": true,
+      "origen_contexto": "real",
+      "ubicacion": {
+        "en_red_catalogada": false,
+        "distancia_tramo_m": 729,
+        "id_tramo": null,
+        "carretera": null,
+        "km": null,
+        "concejo": "OVIEDO",
+        "titularidad": "probablemente municipal/urbana",
+        "organismo_conservacion": "Ayuntamiento de Oviedo",
+        "categoria_via": "via_urbana_o_municipal"
+      },
+      "momento": {
+        "fecha_hora": "2026-10-15T18:00",
+        "franja_luz": "dia",
+        "mes": 10,
+        "estacion": "otono",
+        "factor_fauna_mes": 1.35,
+        "factor_fauna_hora": 0.95
+      },
+      "clima_concejo": {
+        "precip_media_anual_mm": 1330.0,
+        "pct_dias_lluvia_fuerte": 3.3,
+        "pct_dias_helada": 3.1,
+        "pct_dias_nieve": 1.9
+      },
+      "meteo_del_dia": null,
+      "prior": {
+        "multiplicador_veracidad": 1.0,
+        "ajuste_severidad": 0,
+        "motivos": [
+          "fuera de la red interurbana: sin historial de tramo"
+        ],
+        "nota": "heurística inicial basada en datos reales; el modelo se entrena con avisos sintéticos"
+      }
+    }
+  },
+  {
+    "aviso": {
+      "texto": "Existe una señal de tráfico caída tras un temporal.",
+      "categoria_supuesta": "infraestructura",
+      "lat": 43.270616,
+      "lon": -6.452877,
+      "fecha_hora": "2024-02-08T16:00",
+      "es_sintetico": true
+    },
+    "contexto": {
+      "es_aviso_sintetico": true,
+      "origen_contexto": "real",
+      "ubicacion": {
+        "en_red_catalogada": true,
+        "distancia_tramo_m": 0,
+        "id_tramo": "AS-15_km041",
+        "carretera": "AS-15",
+        "km": 41,
+        "concejo": "CANGAS DEL NARCEA",
+        "titularidad": "Principado de Asturias",
+        "organismo_conservacion": "Servicio de Conservación de Carreteras del Principado",
+        "categoria_via": "regional"
+      },
+      "momento": {
+        "fecha_hora": "2024-02-08T16:00",
+        "franja_luz": "dia",
+        "mes": 2,
+        "estacion": "invierno",
+        "factor_fauna_mes": 1.35,
+        "factor_fauna_hora": 1.0
+      },
+      "tramo": {
+        "altitud_m": 270.8,
+        "pendiente_via_pct": 1.64,
+        "sinuosidad": 1.1443302100097923,
+        "susc_desprendimientos": 0,
+        "susc_argayos": 2,
+        "susc_aludes": 0,
+        "proceso_activo_ladera": 0,
+        "proceso_activo_inundacion": 0,
+        "terreno_cinegetico": 1,
+        "n_accidentes": 0,
+        "indice_peligrosidad": 0.4,
+        "indice_fauna": 2.68,
+        "rr_noche": 1.0,
+        "rr_lluvia": 1.0,
+        "rr_hielo_nieve": 1.0,
+        "nivel_riesgo_base": "baja",
+        "score_riesgo_base": 0.521,
+        "factores_riesgo": "sin factores destacados"
+      },
+      "clima_concejo": {
+        "precip_media_anual_mm": 1360.0,
+        "pct_dias_lluvia_fuerte": 3.7,
+        "pct_dias_helada": 5.6,
+        "pct_dias_nieve": 0.3
+      },
+      "meteo_del_dia": {
+        "precipitacion_mm": 5.8,
+        "nieve_cm": 0.0,
+        "tmin_c": 9.3,
+        "racha_max_kmh": 110.5
+      },
+      "prior": {
+        "multiplicador_veracidad": 1.3,
+        "ajuste_severidad": 0,
+        "motivos": [
+          "temporal confirmado: racha de 110 km/h ese día"
+        ],
+        "nota": "heurística inicial basada en datos reales; el modelo se entrena con avisos sintéticos"
+      }
+    }
+  },
+  {
+    "aviso": {
+      "texto": "Se ha detectado una balsa de agua peligrosa en una carretera secundaria.",
+      "categoria_supuesta": "agua",
+      "lat": 43.338149,
+      "lon": -5.984688,
+      "fecha_hora": "2021-06-17T20:00",
+      "es_sintetico": true
+    },
+    "contexto": {
+      "es_aviso_sintetico": true,
+      "origen_contexto": "real",
+      "ubicacion": {
+        "en_red_catalogada": true,
+        "distancia_tramo_m": 0,
+        "id_tramo": "AS-228_km002",
+        "carretera": "AS-228",
+        "km": 2,
+        "concejo": "OVIEDO",
+        "titularidad": "Principado de Asturias",
+        "organismo_conservacion": "Servicio de Conservación de Carreteras del Principado",
+        "categoria_via": "comarcal"
+      },
+      "momento": {
+        "fecha_hora": "2021-06-17T20:00",
+        "franja_luz": "dia",
+        "mes": 6,
+        "estacion": "verano",
+        "factor_fauna_mes": 0.72,
+        "factor_fauna_hora": 1.59
+      },
+      "tramo": {
+        "altitud_m": 97.4,
+        "pendiente_via_pct": 1.19,
+        "sinuosidad": 1.0089482464668424,
+        "susc_desprendimientos": 0,
+        "susc_argayos": 4,
+        "susc_aludes": 0,
+        "proceso_activo_ladera": 1,
+        "proceso_activo_inundacion": 1,
+        "terreno_cinegetico": 1,
+        "n_accidentes": 0,
+        "indice_peligrosidad": 0.34,
+        "indice_fauna": 0.63,
+        "rr_noche": 1.0,
+        "rr_lluvia": 1.0,
+        "rr_hielo_nieve": 1.0,
+        "nivel_riesgo_base": "media",
+        "score_riesgo_base": 0.59,
+        "factores_riesgo": "susceptibilidad a argayos muy alta; ladera con procesos activos a <200 m; zona con procesos de inundación a <200 m"
+      },
+      "clima_concejo": {
+        "precip_media_anual_mm": 1330.0,
+        "pct_dias_lluvia_fuerte": 3.3,
+        "pct_dias_helada": 3.1,
+        "pct_dias_nieve": 1.9
+      },
+      "meteo_del_dia": {
+        "precipitacion_mm": 66.8,
+        "nieve_cm": 0.0,
+        "tmin_c": 14.6,
+        "racha_max_kmh": 29.9
+      },
+      "prior": {
+        "multiplicador_veracidad": 1.5,
+        "ajuste_severidad": 0,
+        "motivos": [
+          "zona con procesos de inundación",
+          "lluvia ese día"
+        ],
+        "nota": "heurística inicial basada en datos reales; el modelo se entrena con avisos sintéticos"
+      }
+    }
+  },
+  {
+    "aviso": {
+      "texto": "Hay un desprendimiento próximo a una vía de montaña.",
+      "categoria_supuesta": "desprendimiento",
+      "lat": 43.026939,
+      "lon": -6.226927,
+      "fecha_hora": "2024-01-20T07:45",
+      "es_sintetico": true
+    },
+    "contexto": {
+      "es_aviso_sintetico": true,
+      "origen_contexto": "real",
+      "ubicacion": {
+        "en_red_catalogada": true,
+        "distancia_tramo_m": 0,
+        "id_tramo": "AS-227_km050",
+        "carretera": "AS-227",
+        "km": 50,
+        "concejo": "SOMIEDO",
+        "titularidad": "Principado de Asturias",
+        "organismo_conservacion": "Servicio de Conservación de Carreteras del Principado",
+        "categoria_via": "comarcal"
+      },
+      "momento": {
+        "fecha_hora": "2024-01-20T07:45",
+        "franja_luz": "noche",
+        "mes": 1,
+        "estacion": "invierno",
+        "factor_fauna_mes": 1.11,
+        "factor_fauna_hora": 0.95
+      },
+      "tramo": {
+        "altitud_m": 1481.5,
+        "pendiente_via_pct": 0.81,
+        "sinuosidad": 1.0,
+        "susc_desprendimientos": 0,
+        "susc_argayos": 1,
+        "susc_aludes": 0,
+        "proceso_activo_ladera": 0,
+        "proceso_activo_inundacion": 0,
+        "terreno_cinegetico": 1,
+        "n_accidentes": 0,
+        "indice_peligrosidad": 0.34,
+        "indice_fauna": 0.63,
+        "rr_noche": 1.0,
+        "rr_lluvia": 1.0,
+        "rr_hielo_nieve": 1.0,
+        "nivel_riesgo_base": "baja",
+        "score_riesgo_base": 0.414,
+        "factores_riesgo": "tramo de montaña (1482 m)"
+      },
+      "clima_concejo": {
+        "precip_media_anual_mm": 1433.0,
+        "pct_dias_lluvia_fuerte": 4.2,
+        "pct_dias_helada": 11.8,
+        "pct_dias_nieve": 7.8
+      },
+      "meteo_del_dia": {
+        "precipitacion_mm": 0.0,
+        "nieve_cm": 0.0,
+        "tmin_c": -5.3,
+        "racha_max_kmh": 38.5
+      },
+      "prior": {
+        "multiplicador_veracidad": 1.0,
+        "ajuste_severidad": 2,
+        "motivos": [
+          "de noche",
+          "vía de montaña: pocas rutas alternativas y acceso difícil"
+        ],
+        "nota": "heurística inicial basada en datos reales; el modelo se entrena con avisos sintéticos"
+      }
+    }
+  }
+]

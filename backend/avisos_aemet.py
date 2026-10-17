@@ -125,20 +125,42 @@ class FeedAEMET:
         with urllib.request.urlopen(req, timeout=20) as r:
             return r.read()
 
+    def _copias(self):
+        return sorted(CARPETA_SNAPSHOT.glob("meteoalarm*.xml"), key=lambda f: f.stat().st_mtime, reverse=True)
+
+    def cargar_copia(self):
+        """Carga al instante la última copia guardada, para que el mapa nunca arranque vacío."""
+        for f in self._copias():
+            try:
+                self.avisos = parsear(f.read_bytes())
+                self.fuente = "copia del " + datetime.fromtimestamp(f.stat().st_mtime).strftime("%d/%m %H:%M")
+                self.actualizado = datetime.now().isoformat(timespec="seconds")
+                return True
+            except Exception:
+                continue
+        return False
+
+    def _guardar_copia(self, crudo):
+        """Tras cada descarga buena se guarda la copia del día (como mucho cada 30 min)."""
+        try:
+            CARPETA_SNAPSHOT.mkdir(parents=True, exist_ok=True)
+            destino = CARPETA_SNAPSHOT / f"meteoalarm_{datetime.now():%Y-%m-%d}.xml"
+            if not destino.exists() or time.time() - destino.stat().st_mtime > 1800:
+                destino.write_bytes(crudo)
+        except Exception:
+            pass
+
     def refrescar(self):
         try:
-            self.avisos = parsear(self._descargar())
+            crudo = self._descargar()
+            self.avisos = parsear(crudo)
             self.fuente, self.error = "MeteoAlarm en directo", None
+            self._guardar_copia(crudo)
         except Exception as e:
+            # Sin conexión: se mantiene lo último que hubiera (directo anterior o copia guardada)
             self.error = f"{type(e).__name__}: {e}"
             if self.fuente is None:
-                for f in sorted(CARPETA_SNAPSHOT.glob("meteoalarm*.xml"), reverse=True):
-                    try:
-                        self.avisos = parsear(f.read_bytes())
-                        self.fuente = f"instantánea {f.stem[-10:]}"
-                        break
-                    except Exception:
-                        continue
+                self.cargar_copia()
         self.actualizado = datetime.now().isoformat(timespec="seconds")
 
     def arrancar(self):
@@ -149,6 +171,7 @@ class FeedAEMET:
                       f"({self.fuente or 'sin datos'}{'; ' + self.error if self.error else ''})")
                 time.sleep(REFRESCO_S)
         if self._hilo is None:
+            self.cargar_copia()  # el mapa tiene datos desde el primer segundo
             self._hilo = threading.Thread(target=bucle, daemon=True)
             self._hilo.start()
 
